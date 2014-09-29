@@ -666,7 +666,7 @@ Run the following commands to add some O.S. images into your Glance repository.
 
     glance image-create --location http://uec-images.ubuntu.com/releases/14.10/beta-2/ubuntu-14.10-beta2-server-cloudimg-amd64.tar.gz --is-public true --disk-format qcow2 --container-format bare --name "BETA 2 - Ubuntu 14.10 - Utopic Unicorn - 64-bit - Cloud Based Image"
 
-### 3.3.5. CoreOS 438.0.0
+### 3.3.5. CoreOS 452.0.0
 
 Info: https://coreos.com
 
@@ -676,7 +676,7 @@ Info: https://coreos.com
 
     bunzip2 coreos_production_openstack_image.img.bz2
 
-    glance image-create --name "CoreOS 438.0.0 - Linux 3.16.2 - Docker 1.2.0 - etcd 0.4.6 - fleet 0.8.0" --container-format ovf --disk-format qcow2 --file coreos_production_openstack_image.img --is-public True
+    glance image-create --name "CoreOS 452.0.0 - Linux 3.16.2 - Docker 1.2.0 - etcd 0.4.6 - fleet 0.8.1" --container-format ovf --disk-format qcow2 --file coreos_production_openstack_image.img --is-public True
 
 ### 3.3.6. Windows 2012 R2:
 
