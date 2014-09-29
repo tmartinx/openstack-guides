@@ -662,9 +662,9 @@ Run the following commands to add some O.S. images into your Glance repository.
 
 ### 3.3.5. Ubuntu 14.10:
 
-    glance image-create --location http://uec-images.ubuntu.com/releases/14.10/beta-1/ubuntu-14.10-beta1-server-cloudimg-i386.tar.gz --is-public true --disk-format qcow2 --container-format bare --name "Ubuntu 14.10 - Utopic Unicorn - 32-bit - Cloud Based Image"
+    glance image-create --location http://uec-images.ubuntu.com/releases/14.10/beta-2/ubuntu-14.10-beta2-server-cloudimg-1386.tar.gz --is-public true --disk-format qcow2 --container-format bare --name "BETA 2 - Ubuntu 14.10 - Utopic Unicorn - 32-bit - Cloud Based Image"
 
-    glance image-create --location http://uec-images.ubuntu.com/releases/14.10/beta-1/ubuntu-14.10-beta1-server-cloudimg-amd64.tar.gz --is-public true --disk-format qcow2 --container-format bare --name "Ubuntu 14.10 - Utopic Unicorn - 64-bit - Cloud Based Image"
+    glance image-create --location http://uec-images.ubuntu.com/releases/14.10/beta-2/ubuntu-14.10-beta2-server-cloudimg-amd64.tar.gz --is-public true --disk-format qcow2 --container-format bare --name "BETA 2 - Ubuntu 14.10 - Utopic Unicorn - 64-bit - Cloud Based Image"
 
 ### 3.3.5. CoreOS 438.0.0
 
