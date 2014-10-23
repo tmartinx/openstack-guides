@@ -2,15 +2,15 @@
 
 This is a Quick Guide to deploy OpenStack Juno on top of Ubuntu 14.04.1, it is IPv6-Only (almost)!
 
-It is compliant with OpenStack's official documentation (docs.openstack.org).
+It is compliant with OpenStack's official documentation (docs.openstack.org/juno).
 
 The tenant's subnets are based on Neutron, with ML2 plugin and `Single Flat Network` topology, Dual-Stacked. The topology `VLAN Provider Networks` are also supported on this guide, it is very similar with `Single Flat Network`.
 
-The `Single Flat Network` is the simplest network topology supported by OpenStack. So, it is easier to understand and follow. Then, you can start using `VLAN Provider Networks`, which is basically something like a "Multi-(Single Flat Network)", where each "Flat LAN" have its own VLAN.
+The `Single Flat Network` is the simplest network topology supported by OpenStack. So, it is easier to understand and follow. Then, you can start using `VLAN Provider Networks`, which is basically something like a "Multi-(Single Flat Network)", where each "Flat LAN" resides on its own VLAN tag.
 
-Finally, the IPv6 support in `Neutron L3 Router` is ready! But, with ML2 plugin in Juno, you can have a Dual-Stacked environment with a `Single Flat Network / VLAN Provider Networks` without using `Neutron L3 Router` at all. 
+Finally, the IPv6 support on `Neutron L3 Router` is ready! With ML2 plugin, you can have a Dual-Stacked environment on top of a `Single Flat Network / VLAN Provider Networks` without using `Neutron L3 Router` at all (i.e. by using upstream routers).
 
-Apparently, only Metadata (and GRE / VXLAN subnet) still requires IPv4. This is why this guide is "almost IPv6-Only". If you don't need Metadata Services, you don't need IPv4 either.
+Apparently, only Metadata and the "GRE / VXLAN subnet" still requires IPv4. This is why this guide is "almost IPv6-Only". If you don't need Metadata Services, you don't need IPv4 either.
 
 This is a "step-by-step", a "cut-and-paste" guide.
 
@@ -66,7 +66,7 @@ Bitcoin Address: `1JpNbLczAhUkbqQMv9iaQksiTd8yLaDx6K`
 ##### 3.3.3. Ubuntu 12.04.4 - LTS
 ##### 3.3.4. Ubuntu 14.04.1 - LTS
 ##### 3.3.5. Ubuntu 14.10
-##### 3.3.5. CoreOS 438.0.0
+##### 3.3.5. CoreOS
 ##### 3.3.6. Windows 2012 R2
 #### 3.4. Listing the O.S. images
 
@@ -114,9 +114,9 @@ Bitcoin Address: `1JpNbLczAhUkbqQMv9iaQksiTd8yLaDx6K`
 
 # 1. First things first, the border gateway
 
-This lab have a Ubuntu acting as a firewall, with our WAN ISP attached to it, so, behind it, will sit the entire OpenStack infrastructure.
+This lab have an Ubuntu acting as a firewall and two ethernet cards, with our WAN ISP attached to eth0, so, behind it (eth1), will sit the entire OpenStack infrastructure (i.e. "The Cloud").
 
-This Firewall Ubuntu might have the package **aiccu** installed, so, you'll have at least, one IPv6 /64 block to play with (if you don't have it native from your ISP, get one from SixxS.net and start using **aiccu**).
+This Firewall Ubuntu might have the package **aiccu** installed, so, you'll have at least, one IPv6 /64 block to play with (if you don't have it native from your ISP already, get one from SixxS.net and start using it with **aiccu**).
 
 Also, if you go with IPv6, you'll probably need the package **radvd** installed here, so, you'll be able to advertise your IPv6 blocks within your LAN. And, for the Ubuntu IPv6 clients (including future IPv6-Only Instances), you'll also need the package **rdnssd** to auto-configure the Instance's /etc/resolv.conf file according.
 
@@ -233,7 +233,7 @@ Example of its /etc/radvd.conf file:
     # Router Advertisement daemon, called radvd. So, we'll not use DHCPv6.
     #
     # Ubuntu, "Provider Networking - upstream SLAAC" router for Instances.
-    #
+    #    
     # eth1 - LAN faced:
     interface eth1
     {
@@ -399,7 +399,15 @@ The next OVS command will kick you out from this server (if connected to it via 
 
 ## 2.3. Install OpenStack "base" dependecies
 
-    apt-get install mysql-server python-mysqldb ntp curl openssl rabbitmq-server python-keyring
+    apt-get install ubuntu-cloud-keyring python-software-properties mysql-server python-mysqldb ntp curl openssl rabbitmq-server python-keyring
+
+Add the following line to: /etc/apt/sources.list.d/ubuntu-cloud-archive-juno-trusty.list:
+
+    deb http://ubuntu-cloud.archive.canonical.com/ubuntu trusty-updates/juno main
+
+Run:
+
+    apt-get update ; apt-get dist-upgrade -y
 
 Configure it:
 
@@ -456,9 +464,10 @@ Once within MySQL prompt, create the databases:
     GRANT ALL ON heat.* TO 'heatUser'@'%' IDENTIFIED BY 'heatPass';
     quit;
 
-### Document references
+### Documentation reference
 
- * http://docs.openstack.org/trunk/install-guide/install/apt/content/basics-database-controller.html
+ * http://docs.openstack.org/juno/install-guide/install/apt/content/ch_basic_environment.html#basics-messaging-server
+ * http://docs.openstack.org/juno/install-guide/install/apt/content/ch_basic_environment.html#basics-database
 
 ## 2.4. Install Keystone
 
@@ -560,7 +569,7 @@ Test Keystone with basic option to see if it works:
 
 ### Document references
 
- * http://docs.openstack.org/trunk/install-guide/install/apt/content/keystone-install.html
+ * http://docs.openstack.org/juno/install-guide/install/apt/content/keystone-install.html
 
 # 3. Install Glance
 
@@ -638,15 +647,9 @@ Run the following commands to add some O.S. images into your Glance repository.
 
 ### 3.3.1. CirrOS (Optional - TestVM):
 
-    glance image-create --location http://download.cirros-cloud.net/0.3.2/cirros-0.3.2-i386-disk.img --name "CirrOS 0.3.2 - Minimalist - 32-bit - Cloud Based Image" --is-public true --container-format bare --disk-format qcow2
+    glance image-create --location http://download.cirros-cloud.net/0.3.3/cirros-0.3.3-i386-disk.img --name "CirrOS 0.3.3 - Minimalist - 32-bit - Cloud Based Image" --is-public true --container-format bare --disk-format qcow2
 
-    glance image-create --location http://download.cirros-cloud.net/0.3.2/cirros-0.3.2-x86_64-disk.img --name "CirrOS 0.3.2 - Minimalist - 64-bit - Cloud Based Image" --is-public true --container-format bare --disk-format qcow2
-
-### 3.3.2. Ubuntu 13.10:
-
-    glance image-create --location http://uec-images.ubuntu.com/releases/13.10/release/ubuntu-13.10-server-cloudimg-i386-disk1.img --is-public true --disk-format qcow2 --container-format bare --name "Ubuntu 13.10 - Saucy Salamander - 32-bit - Cloud Based Image"
-
-    glance image-create --location http://uec-images.ubuntu.com/releases/13.10/release/ubuntu-13.10-server-cloudimg-amd64-disk1.img --is-public true --disk-format qcow2 --container-format bare --name "Ubuntu 13.10 - Saucy Salamander - 64-bit - Cloud Based Image"
+    glance image-create --location http://download.cirros-cloud.net/0.3.3/cirros-0.3.3-x86_64-disk.img --name "CirrOS 0.3.2 - Minimalist - 64-bit - Cloud Based Image" --is-public true --container-format bare --disk-format qcow2
 
 ### 3.3.3. Ubuntu 12.04.5 - LTS:
 
@@ -666,7 +669,7 @@ Run the following commands to add some O.S. images into your Glance repository.
 
     glance image-create --location http://uec-images.ubuntu.com/releases/14.10/beta-2/ubuntu-14.10-beta2-server-cloudimg-amd64.tar.gz --is-public true --disk-format qcow2 --container-format bare --name "BETA 2 - Ubuntu 14.10 - Utopic Unicorn - 64-bit - Cloud Based Image"
 
-### 3.3.5. CoreOS 452.0.0
+### 3.3.5. CoreOS 472.0.0
 
 Info: https://coreos.com
 
@@ -676,7 +679,7 @@ Info: https://coreos.com
 
     bunzip2 coreos_production_openstack_image.img.bz2
 
-    glance image-create --name "CoreOS 452.0.0 - Linux 3.16.2 - Docker 1.2.0 - etcd 0.4.6 - fleet 0.8.1" --container-format ovf --disk-format qcow2 --file coreos_production_openstack_image.img --is-public True
+    glance image-create --name "CoreOS 472.0.0 - Linux 3.16.2 - Docker 1.3.0 - etcd 0.4.6 - fleet 0.8.1" --container-format ovf --disk-format qcow2 --file coreos_production_openstack_image.img --is-public True
 
 ### 3.3.6. Windows 2012 R2:
 
@@ -692,7 +695,7 @@ If you need to run Windows 2012 in your OpenStack, visit: http://cloudbase.it/ws
 
 ### Document references
 
- * http://docs.openstack.org/trunk/install-guide/install/apt/content/glance-install.html
+ * http://docs.openstack.org/juno/install-guide/install/apt/content/glance-install.html
 
 # 4. Install Nova
 
@@ -771,7 +774,7 @@ Create new flavors:
 
 ### Document references
 
- * http://docs.openstack.org/trunk/install-guide/install/apt/content/nova-controller.html
+ * http://docs.openstack.org/juno/install-guide/install/apt/content/ch_nova.html
 
 # 5. Install Neutron
 
@@ -836,6 +839,7 @@ With:
     [securitygroup]
     enable_security_group = True
     firewall_driver = neutron.agent.linux.iptables_firewall.OVSHybridIptablesFirewallDriver
+    enable_ipset = True
 
     [ovs]
     enable_tunneling = False
@@ -903,7 +907,7 @@ Create an IPv6 subnet on "sharednet1":
 
 ### Document references
 
- * http://docs.openstack.org/trunk/install-guide/install/apt/content/neutron-ml2-controller-node.html
+ * http://docs.openstack.org/juno/install-guide/install/apt/content/neutron-controller-node.html
 
 # 6. Install Cinder
 
@@ -966,7 +970,7 @@ Install Cinder Volume:
 
 ### Document references
 
- * http://docs.openstack.org/trunk/install-guide/install/apt/content/cinder-controller.html
+ * http://docs.openstack.org/juno/install-guide/install/apt/content/cinder-install-controller-node.html
 
 # 7. Install Horizon Dashboard
 
@@ -988,7 +992,7 @@ Done! You can try to access the Dashboard to test admin login...
 
 ### Document references
 
- * http://docs.openstack.org/icehouse/install-guide/install/apt/content/install_dashboard.html
+ * http://docs.openstack.org/juno/install-guide/install/apt/content/install_dashboard.html
 
 ---
 
@@ -1032,7 +1036,7 @@ Login as root and run:
 
     # If your kernel gets upgraded, do a reboot before running the next command:
 
-    apt-get install linux-image-extra-`uname -r` vim iptables ubuntu-virt-server libvirt-bin pm-utils nova-compute-kvm python-guestfs neutron-plugin-openvswitch-agent openvswitch-switch -y
+    apt-get install linux-image-extra-`uname -r` vim iptables ipset ubuntu-virt-server libvirt-bin pm-utils nova-compute-kvm python-guestfs neutron-plugin-openvswitch-agent openvswitch-switch -y
 
 When prompted to create a *supermin* appliance, respond **yes**.
 
@@ -1158,7 +1162,7 @@ Run:
 
 ### Document references
 
- * http://docs.openstack.org/icehouse/install-guide/install/apt/content/nova-compute.html
+ * http://docs.openstack.org/juno/install-guide/install/apt/content/ch_nova.html#nova-compute-install
 
 ## 8.5. Install Neutron
 
@@ -1206,7 +1210,7 @@ With:
 
     [ml2]
     type_drivers = local,flat
-    
+
     mechanism_drivers = openvswitch,l2population
     
     [ml2_type_flat]
@@ -1215,6 +1219,7 @@ With:
     [securitygroup]
     enable_security_group = True
     firewall_driver = neutron.agent.linux.iptables_firewall.OVSHybridIptablesFirewallDriver
+    enable_ipset = True
 
     [ovs]
     enable_tunneling = False
@@ -1228,7 +1233,7 @@ Run:
 
 ### Document references
 
- * http://docs.openstack.org/icehouse/install-guide/install/apt/content/neutron-ml2-compute-node.html
+ * http://docs.openstack.org/juno/install-guide/install/apt/content/neutron-compute-node.html
 
 # 9. Creating your first Dual-Stacked Instance
 
@@ -1314,7 +1319,7 @@ You have your own Private Cloud Computing Environment up and running! With IPv6!
 
 - OpenStack Juno Documentation for Ubuntu:
 
- http://docs.openstack.org/trunk/install-guide/install/apt/content/
+ http://docs.openstack.org/juno/install-guide/install/apt/content/
 
 - OpenStack `Single Flat Network` documentation:
 
