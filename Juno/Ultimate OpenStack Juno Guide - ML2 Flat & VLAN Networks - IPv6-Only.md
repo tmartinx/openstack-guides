@@ -282,7 +282,7 @@ Make your MySQL a bit safer:
 
 Now make the required databases:
 
-    wget -qO- https://raw.githubusercontent.com/tmartinx/openstack-guides/master/Juno/controller/root/create-mysql-dbs.sh | /bin/bash
+    wget -qO- https://raw.githubusercontent.com/tmartinx/openstack-guides/master/Juno/controller/root/mysql-dbs.sql | mysql -u root -p
 
 ### Documentation reference
 
