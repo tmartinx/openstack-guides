@@ -713,7 +713,7 @@ Run:
 
     chmod 640 /etc/nova/nova.conf
 
-*NOTE: Edit your nova.conf file, before running "db sync", to reflect your own FQDN (*.yourdomain.com), if desired.*
+*NOTE: Edit your nova.conf file, before running "db sync", to reflect your own FQDN (*.yourdomain.com) and IPv6 address, if desired.*
 
     rm /var/lib/nova/nova.sqlite
 
