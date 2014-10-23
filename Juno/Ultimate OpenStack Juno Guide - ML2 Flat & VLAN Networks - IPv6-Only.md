@@ -918,31 +918,7 @@ Create an IPv6 subnet on "sharednet1":
 
     apt-get install cinder-api cinder-scheduler python-mysqldb
 
-Edit cinder.conf...
-
-    vi /etc/cinder/cinder.conf
-
-with:
-
-    [DEFAULT]
-
-    my_ip = 2001:db8:1::10
-    glance_host = 2001:db8:1::10
-    osapi_volume_listen = 2001:db8:1::10
-
-    rpc_backend = cinder.openstack.common.rpc.impl_kombu
-    rabbit_host = controller.yourdomain.com
-
-    connection = mysql://cinderUser:cinderPass@controller.yourdomain.com/cinder
-
-    [keystone_authtoken]
-    auth_uri = http://controller.yourdomain.com:5000
-    auth_host = controller.yourdomain.com
-    auth_port = 35357
-    auth_protocol = http
-    admin_tenant_name = service
-    admin_user = cinder
-    admin_password = service_pass
+    wget https://raw.githubusercontent.com/tmartinx/openstack-guides/master/Juno/controller/etc/cinder/cinder.conf
 
 Run:
 
