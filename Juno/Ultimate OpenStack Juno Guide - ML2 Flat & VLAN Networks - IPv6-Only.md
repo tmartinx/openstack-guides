@@ -596,10 +596,8 @@ With:
     connection = mysql://glanceUser:glancePass@controller.yourdomain.com/glance
 
     [keystone_authtoken]
+    identity_uri = http://controller.yourdomain.com:35357
     auth_uri = http://controller.yourdomain.com:5000
-    auth_host = controller.yourdomain.com
-    auth_port = 35357
-    auth_protocol = http
     admin_tenant_name = service
     admin_user = glance
     admin_password = service_pass
@@ -622,10 +620,8 @@ With:
     connection = mysql://glanceUser:glancePass@controller.yourdomain.com/glance
 
     [keystone_authtoken]
+    identity_uri = http://controller.yourdomain.com:35357
     auth_uri = http://controller.yourdomain.com:5000
-    auth_host = controller.yourdomain.com
-    auth_port = 35357
-    auth_protocol = http
     admin_tenant_name = service
     admin_user = glance
     admin_password = service_pass
