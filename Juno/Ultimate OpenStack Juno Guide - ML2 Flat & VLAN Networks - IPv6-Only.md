@@ -795,6 +795,9 @@ With:
     auth_strategy = keystone
     allow_overlapping_ips = True
     rabbit_host = controller.yourdomain.com
+    rpc_backend = rabbit
+    core_plugin = ml2
+    service_plugins = router
     
     notify_nova_on_port_status_changes = True
     notify_nova_on_port_data_changes = True
@@ -807,9 +810,7 @@ With:
 
     [keystone_authtoken]
     auth_uri = http://controller.yourdomain.com:5000
-    auth_host = controller.yourdomain.com
-    auth_port = 35357
-    auth_protocol = http
+    identity_uri = http://controller:35357
     admin_tenant_name = service
     admin_user = neutron
     admin_password = service_pass
@@ -876,6 +877,8 @@ With:
     dhcp_domain = yourdomain.com
 
 Run:
+
+    su -s /bin/sh -c "neutron-db-manage --config-file /etc/neutron/neutron.conf --config-file /etc/neutron/plugins/ml2/ml2_conf.ini upgrade juno" neutron
 
     cd /etc/init/; for i in $(ls -1 neutron-* | cut -d \. -f 1); do sudo service $i restart; done
 
