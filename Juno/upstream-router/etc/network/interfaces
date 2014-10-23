@@ -1,0 +1,61 @@
+# The loopback network interface
+auto lo
+iface lo inet loopback
+
+# ETH0 - BEGIN - WAN faced
+# The primary network interface connected to your ISP's WAN
+auto eth0
+
+# IPv6
+#
+# If you have native IPv6, configure it here, otherwise, aiccu will create
+# a new interface for your IPv6 WAN, called sixxs, tunneled through your
+# eth0's IPv4 address.
+iface eth0 inet6 static
+    address 2001:db8:0::2
+    netmask 64
+    gateway 2001:db8:0::1
+    # dns-* options are implemented by the resolvconf package, if installed
+    dns-search yourdomain.com
+    dns-domain yourdomain.com
+    # Google Public DNS
+    dns-nameservers 2001:4860:4860::8844 2001:4860:4860::8888
+    # OpenNIC 
+#    dns-nameservers 2001:530::216:3cff:fe8d:e704 2600:3c00::f03c:91ff:fe96:a6ad 2600:3c00::f03c:91ff:fe96:a6ad
+    # OpenDNS Public Name Servers:
+#    dns-nameservers 2620:0:ccc::2 2620:0:ccd::2
+
+# IPv4 - Legacy
+#
+iface eth0 inet static
+    address 200.10.1.2
+    netmask 28
+    gateway 200.10.1.1
+    # Google Public DNS
+#   dns-nameservers 8.8.4.4 8.8.8.8
+    # OpenDNS
+#   dns-nameservers 208.67.222.222 208.67.220.220 208.67.222.220 208.67.220.222
+    # OpenNIC
+#   dns-nameservers 66.244.95.20 74.207.247.4 216.87.84.211
+# ETH0 - END
+
+# ETH1 - BEGIN - LAN faced
+auto eth1
+
+# IPv6
+#
+# Your routed block, SixxS.net or TunnelBroker provides one for you, for free.
+# You might want to run "radvd" on eth1 to advertise it to your LAN / Cloud.
+#
+# OpenStack Management + Instance's gateway
+iface eth1 inet6 static
+    address 2001:db8:1::1
+    netmask 64
+
+# IPv4 - Legacy
+#
+# OpenStack Management + Instance's gateway
+iface eth1 inet static
+    address 10.32.14.1
+    netmask 24
+# ETH1 - END

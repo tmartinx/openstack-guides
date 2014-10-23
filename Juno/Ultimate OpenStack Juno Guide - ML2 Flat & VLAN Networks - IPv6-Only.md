@@ -112,15 +112,13 @@ Bitcoin Address: `1JpNbLczAhUkbqQMv9iaQksiTd8yLaDx6K`
 
 # *Outside of the Cloud Computing*
 
-# 1. First things first, the border gateway
+# 1. First things first, the upstream router
 
-This lab have an Ubuntu acting as a firewall and two ethernet cards, with our WAN ISP attached to eth0, so, behind it (eth1), will sit the entire OpenStack infrastructure (i.e. "The Cloud").
+This lab have an Ubuntu acting as a "Provider Networking - Upstream SLAAC Router", withit have two ethernet cards, with our WAN ISP attached to eth0, and behind it (eth1), will sit the entire OpenStack infrastructure (i.e. "The Cloud", controllers, network and compute nodes, instances and regular servers).
 
 This Firewall Ubuntu might have the package **aiccu** installed, so, you'll have at least, one IPv6 /64 block to play with (if you don't have it native from your ISP already, get one from SixxS.net and start using it with **aiccu**).
 
-Also, if you go with IPv6, you'll probably need the package **radvd** installed here, so, you'll be able to advertise your IPv6 blocks within your LAN. And, for the Ubuntu IPv6 clients (including future IPv6-Only Instances), you'll also need the package **rdnssd** to auto-configure the Instance's /etc/resolv.conf file according.
-
-For IPv6, this Ubuntu gateway will act as the "Provider Networking - upstream SLAAC Router", so, we'll be able to start testing the already implemented blueprint called "ipv6-provider-nets-slaac".
+Also, if you go with IPv6, you'll need the package **radvd** installed here, so, you'll be able to advertise your IPv6 blocks within your (V)LAN, including your Project's Instances. And, for the Ubuntu IPv6 clients (including future IPv6-Only Instances), you'll also need the package **rdnssd** to auto-configure the Instance's /etc/resolv.conf file according.
 
 ## 1.1. Gateway (Ubuntu 14.04.1)
 
@@ -150,70 +148,11 @@ Install a Ubuntu 14.04.1 with at least two network cards (can be a small virtual
 
         * IP addresses: 10.32.14.1/24 (Management + Instances)
 
-## 1.2. Example of its /etc/network/interfaces file:
+## 1.2. Example of its /etc/network/interfaces file
 
-    # The loopback network interface
-    auto lo
-    iface lo inet loopback
-    iface lo inet6 loopback
+Get it here (example):
 
-    # ETH0 - BEGIN - WAN faced
-    # The primary network interface connected to your ISP's WAN
-    auto eth0
-
-    # IPv6
-    #
-    # If you have native IPv6, configure it here, otherwise, aiccu will create
-    # a new interface for your IPv6 WAN, called sixxs, tunneled through your
-    # eth0 IPv4 address.
-    iface eth0 inet6 static
-        address 2001:db8:0::2
-        netmask 64
-        gateway 2001:db8:0::1
-        # dns-* options are implemented by the resolvconf package, if installed
-        dns-search yourdomain.com
-        dns-domain yourdomain.com
-        # Google Public DNS
-        dns-nameservers 2001:4860:4860::8844 2001:4860:4860::8888
-        # OpenNIC 
-    #    dns-nameservers 2001:530::216:3cff:fe8d:e704 2600:3c00::f03c:91ff:fe96:a6ad 2600:3c00::f03c:91ff:fe96:a6ad
-        # OpenDNS Public Name Servers:
-    #    dns-nameservers 2620:0:ccc::2 2620:0:ccd::2
-
-    # IPv4 - Legacy
-    #
-    iface eth0 inet static
-    	address 200.10.1.2
-    	netmask 28
-        gateway 200.10.1.1
-        # Google Public DNS
-    #	dns-nameservers 8.8.4.4
-        # OpenDNS
-    #   dns-nameservers 208.67.222.222 208.67.220.220 208.67.222.220 208.67.220.222
-        # OpenNIC
-    #   dns-nameservers 66.244.95.20 74.207.247.4 216.87.84.211
-    # ETH0 - END
-
-    # ETH1 - BEGIN - LAN faced
-    auto eth1
-
-    # IPv6
-    #
-    # Your routed block, SixxS.net or TunnelBroker provides one for you, for free.
-    # You might want to run "radvd" on eth1 to advertise it to your LAN / Cloud.
-    #
-    # OpenStack Management + Instance's gateway
-    iface eth1 inet6 static
-    	address 2001:db8:1::1
-        netmask 64
-
-    # IPv4 - Legacy
-    #
-    # OpenStack Management + Instance's gateway
-    iface eth1 inet static
-    	address 10.32.14.1
-    	netmask 24
-    # ETH1 - END
+    wget https://raw.githubusercontent.com/tmartinx/openstack-guides/master/Juno/upstream-router/etc/network/interfaces
 
 ## 1.3. Enable IPv6 / IPv4 packet forwarding
 
@@ -227,51 +166,15 @@ Run the following commands
 
 OpenStack Juno is now compatible with an upstream SLAAC router.
 
-Example of its /etc/radvd.conf file:
+Get it here (example):
 
-    # With IPv6, the DHCP(v6) is entirely optional, now, we have the
-    # Router Advertisement daemon, called radvd. So, we'll not use DHCPv6.
-    #
-    # Ubuntu, "Provider Networking - upstream SLAAC" router for Instances.
-    #    
-    # eth1 - LAN faced:
-    interface eth1
-    {
-
-        # Enable RA on this gateway:
-        AdvSendAdvert on;
- 
-        # Disable clients from getting their IPs from DHCPv6 (no need for it):
-        AdvManagedFlag off;
-
-        # Disable clients from getting other configs from DHCPv6:
-        AdvOtherConfigFlag off;
- 
-        # More options:
-        AdvLinkMTU 1500;
-        AdvDefaultPreference high;
-
-        # Enable RA to the following subnet
-        prefix 2001:db8:1::/64
-        {
-           AdvOnLink on;
- 
-           # Allow clients to auto-generate their IPv6 address (SLAAC),
-           # DHCPv6 will not be used here.
-           AdvAutonomous on;
-        };
-
-        # Ubuntu IPv6 clients requires the package rdnssd to deal with RDNSS: 
-        RDNSS 2001:4860:4860::8844 2001:4860:4860::8888 { };
-        DNSSL yourdomain.com { };
-
-    };
+    wget https://raw.githubusercontent.com/tmartinx/openstack-guides/master/Juno/upstream-router/etc/radvd.conf
 
 Install the following package (RA Daemon):
 
     sudo apt-get install radvd
 
-Now your entire LAN have IPv6! Have fun!
+Now both your LAN and your Cloud, have IPv6! Have fun!
 
 ## 1.5. NAT rule (Legacy)
 
@@ -315,79 +218,25 @@ Login as root and run:
 
     echo controller > /etc/hostname
 
+    wget -qO- https://raw.githubusercontent.com/tmartinx/openstack-guides/master/Juno/controller/etc/hosts > /etc/hosts
+
     apt-get update
     
     apt-get dist-upgrade -y
 
     apt-get install vim iptables openvswitch-switch
 
-    vi /etc/hosts
-
-Make sure it have the following contents:
-
-    127.0.0.1       localhost.localdomain   localhost
-
-    # IPv6
-    2001:db8:1::10  controller.yourdomain.com   controller
-    2001:db8:1::20  compute-1.yourdomain.com   compute-1
-    2001:db8:1::30  compute-2.yourdomain.com   compute-2
-
-    # IPv4 - Not needed:
-    #10.32.14.10    controller.yourdomain.com   controller
-    #10.32.14.20    compute-1.yourdomain.com   compute-1
-    #10.32.14.30    compute-2.yourdomain.com   compute-2
-
 ## 2.2. Configure the network
+
+Login as root.
 
 Edit your Controller Node network interfaces file:
 
-    vi /etc/network/interfaces
+Get it here (example):
 
-With:
+    wget -qO- https://raw.githubusercontent.com/tmartinx/openstack-guides/master/Juno/controller/etc/network/interfaces > /etc/network/interfaces
 
-    # The primary network interface
-    # ETH0 - BEGIN
-    auto eth0
-    iface eth0 inet manual
-    	up ip link set $IFACE up
-    	up ip address add 0/0 dev $IFACE
-    	down ip link set $IFACE down
-    # ETH0 - END
-
-    # BR-ETH0 - BEGIN
-    auto br-eth0
-
-    # IPv6
-    #
-    iface br-eth0 inet6 static
-        address 2001:db8:1::10
-        netmask 64
-        gateway 2001:db8:1::1
-        # dns-* options are implemented by the resolvconf package, if installed
-    	dns-search yourdomain.com
-    	dns-domain yourdomain.com
-        # Google Public DNS
-        dns-nameservers 2001:4860:4860::8844 2001:4860:4860::8888
-        # OpenNIC
-    #    dns-nameservers 2001:530::216:3cff:fe8d:e704 2600:3c00::f03c:91ff:fe96:a6ad 2600:3c00::f03c:91ff:fe96:a6ad
-        # OpenDNS Public Name Servers
-    #    dns-nameservers 2620:0:ccc::2 2620:0:ccd::2
-
-    # IPv4 - Legacy
-    #
-    iface br-eth0 inet static
-    	address 10.32.14.10
-    	netmask 24
-    	gateway 10.32.14.1
-        # Google Public DNS
-    	dns-nameservers 8.8.4.4
-        # OpenDNS
-    #    dns-nameservers 208.67.222.222 208.67.220.220 208.67.222.220 208.67.220.222
-        # OpenNIC
-    #    dns-nameservers 66.244.95.20 74.207.247.4 216.87.84.211
-    # BR-ETH0 - END
-
-Login as root and run:
+Run:
 
     ovs-vsctl add-br br-int
 
@@ -401,13 +250,15 @@ The next OVS command will kick you out from this server (if connected to it via 
 
     apt-get install ubuntu-cloud-keyring python-software-properties mysql-server python-mysqldb ntp curl openssl rabbitmq-server python-keyring
 
-Add the following line to: /etc/apt/sources.list.d/ubuntu-cloud-archive-juno-trusty.list:
+Download the following line to
 
-    deb http://ubuntu-cloud.archive.canonical.com/ubuntu trusty-updates/juno main
+    wget -qO- https://raw.githubusercontent.com/tmartinx/openstack-guides/master/Juno/controller/etc/apt/sources.list.d/ubuntu-cloud-archive-juno-trusty.list > /etc/apt/sources.list.d/ubuntu-cloud-archive-juno-trusty.list
 
 Run:
 
-    apt-get update ; apt-get dist-upgrade -y
+    apt-get updat
+    
+    apt-get dist-upgrade -y
 
 Configure it:
 
@@ -415,24 +266,9 @@ Replace RABBIT_PASS with a suitable password.
 
     rabbitmqctl change_password guest guest
 
-Reconfigure MySQL, edit my.cnf:
+Reconfigure MySQL by running my.cnf:
 
-    vi /etc/mysql/my.cnf
-
-With:
-
-    [mysqld]
-    #
-    # * For OpenStack - Keystone, etc - utf8
-    #
-    default-storage-engine = innodb
-    collation-server = utf8_general_ci
-    init-connect='SET NAMES utf8'
-    character-set-server = utf8
-    innodb_file_per_table
-
-    # Bind in a Dual-Stacked fashion
-    bind-address = ::
+    wget -qO- https://raw.githubusercontent.com/tmartinx/openstack-guides/master/Juno/controller/etc/mysql/my.cnf > /etc/mysql/my.cnf
 
 Creating the required databases:
 
@@ -446,23 +282,7 @@ Make your MySQL a bit safer:
 
 Now make the required databases:
 
-    mysql -u root -p
-
-Once within MySQL prompt, create the databases:
-
-    CREATE DATABASE keystone;
-    GRANT ALL ON keystone.* TO 'keystoneUser'@'%' IDENTIFIED BY 'keystonePass';
-    CREATE DATABASE glance;
-    GRANT ALL ON glance.* TO 'glanceUser'@'%' IDENTIFIED BY 'glancePass';
-    CREATE DATABASE nova;
-    GRANT ALL ON nova.* TO 'novaUser'@'%' IDENTIFIED BY 'novaPass';
-    CREATE DATABASE cinder;
-    GRANT ALL ON cinder.* TO 'cinderUser'@'%' IDENTIFIED BY 'cinderPass';
-    CREATE DATABASE neutron;
-    GRANT ALL ON neutron.* TO 'neutronUser'@'%' IDENTIFIED BY 'neutronPass';
-    CREATE DATABASE heat;
-    GRANT ALL ON heat.* TO 'heatUser'@'%' IDENTIFIED BY 'heatPass';
-    quit;
+    wget -qO- https://raw.githubusercontent.com/tmartinx/openstack-guides/master/Juno/controller/root/create-mysql-dbs.sh | /bin/bash
 
 ### Documentation reference
 
@@ -499,9 +319,9 @@ Create Keystone basics and endpoints:
 
     cd ~
 
-    wget https://raw.githubusercontent.com/tmartinx/openstack-guides/master/Juno/files/keystone_basic.sh
+    wget https://raw.githubusercontent.com/tmartinx/openstack-guides/master/Juno/controller/root/keystone_basic.sh
 
-    wget https://raw.githubusercontent.com/tmartinx/openstack-guides/master/Juno/files/keystone_endpoints_basic.sh
+    wget https://raw.githubusercontent.com/tmartinx/openstack-guides/master/Juno/controller/root/keystone_endpoints_basic.sh
 
     chmod +x keystone_basic.sh
 
@@ -521,33 +341,8 @@ You might want to cleanup your expired tokens, otherwise, your database will inc
 
 Create your NOVA Resource Configuration file:
 
-    vi ~/.novarc
-
-With:
-
-    # COMMON OPENSTACK ENVS
-    export SERVICE_TOKEN=ADMIN
-    export OS_USERNAME=admin
-    export OS_PASSWORD=admin_pass
-    export OS_TENANT_NAME=admin
-    export OS_AUTH_URL="http://controller.yourdomain.com:5000/v2.0/"
-    export SERVICE_ENDPOINT="http://controller.yourdomain.com:35357/v2.0/"
-    export OS_AUTH_STRATEGY=keystone
-    export OS_NO_CACHE=1
-
-    # LEGACY NOVA ENVS
-    export NOVA_USERNAME=${OS_USERNAME}
-    export NOVA_PROJECT_ID=${OS_TENANT_NAME}
-    export NOVA_PASSWORD=${OS_PASSWORD}
-    export NOVA_API_KEY=${OS_PASSWORD}
-    export NOVA_URL=${OS_AUTH_URL}
-    export NOVA_VERSION=1.1
-    export NOVA_REGION_NAME=RegionOne
-
-    # EUCA2OOLs ENV VARIABLES
-    export EC2_ACCESS_KEY=ab2f155901fb4be5bae4ddc78c924665
-    export EC2_SECRET_KEY=ef89b9562e9b4653a8d68e3117f0ae32
-    export EC2_URL=http://controller.yourdomain.com:8773/services/Cloud
+    cd ~
+    wget https://raw.githubusercontent.com/tmartinx/openstack-guides/master/Juno/controller/root~/.novarc
 
 Append to your bashrc:
 
@@ -966,6 +761,10 @@ Edit Dashboard config file:
 With:
 
     OPENSTACK_HOST = "controller.yourdomain.com"
+    
+Run:
+
+    service apache2 restart ; service memcached restart
 
 Done! You can try to access the Dashboard to test admin login...
 

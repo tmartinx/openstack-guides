@@ -1,0 +1,16 @@
+127.0.0.1       localhost.localdomain   localhost
+
+# The following lines are desirable for IPv6 capable hosts
+::1     localhost ip6-localhost ip6-loopback
+ff02::1 ip6-allnodes
+ff02::2 ip6-allrouters
+
+# IPv6
+2001:db8:1::10  controller.yourdomain.com   controller
+2001:db8:1::20  compute-1.yourdomain.com   compute-1
+2001:db8:1::30  compute-2.yourdomain.com   compute-2
+
+# IPv4 - Not needed:
+#10.32.14.10    controller.yourdomain.com   controller
+#10.32.14.20    compute-1.yourdomain.com   compute-1
+#10.32.14.30    compute-2.yourdomain.com   compute-2
