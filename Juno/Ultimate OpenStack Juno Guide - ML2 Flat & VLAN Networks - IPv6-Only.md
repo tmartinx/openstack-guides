@@ -499,9 +499,9 @@ Create Keystone basics and endpoints:
 
     cd ~
 
-    wget https://gist.githubusercontent.com/tmartinx/7002197/raw/838770e4848c78dcd896fcfb6e4627d754051a72/keystone_basic.sh
+    wget https://raw.githubusercontent.com/tmartinx/openstack-guides/master/Juno/files/keystone_basic.sh
 
-    wget https://gist.githubusercontent.com/tmartinx/7002255/raw/b13b1a09a675ff8c680545afe83b946cb03a36a5/keystone_endpoints_basic.sh
+    wget https://raw.githubusercontent.com/tmartinx/openstack-guides/master/Juno/files/keystone_endpoints_basic.sh
 
     chmod +x keystone_basic.sh
 
