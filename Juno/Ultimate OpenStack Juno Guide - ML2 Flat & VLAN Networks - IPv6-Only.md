@@ -853,10 +853,14 @@ With:
     # The Neutron user information for accessing the Neutron API.
     auth_url = http://controller.yourdomain.com:5000/v2.0
     auth_region = RegionOne
+    # Turn off verification of the certificate for ssl
+    # auth_insecure = False
+    # Certificate Authority public key (CA cert) file for ssl
+    # auth_ca_cert =
     admin_tenant_name = service
     admin_user = neutron
     admin_password = service_pass
-    
+
     nova_metadata_ip = 10.32.14.10
     nova_metadata_port = 8775
     metadata_proxy_shared_secret = metasecret13
@@ -902,7 +906,7 @@ Create an IPv4 subnet on "sharednet1":
 
 Create an IPv6 subnet on "sharednet1":
 
-    neutron subnet-create --ip-version 6 --disable-dhcp --tenant-id $ADMIN_TENANT_ID sharednet1 2001:db8:1::/64 --allocation-pool start=2001:db8:1::8000,end=2001:db8:1:0:ffff:ffff:ffff:fffe
+    neutron subnet-create --ip-version 6 --ipv6_address_mode=slaac --tenant-id a4f6f6785e384d00b6744bed8a31c051 sharednet1 2001:1291:2bf:fffe::/64
 
 ### Document references
 
