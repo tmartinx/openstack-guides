@@ -230,9 +230,7 @@ Login as root and run:
 
 Login as root.
 
-Edit your Controller Node network interfaces file:
-
-Get it here (example):
+Get your Controller Node network interfaces file (example):
 
     wget -qO- https://raw.githubusercontent.com/tmartinx/openstack-guides/master/Juno/controller/etc/network/interfaces > /etc/network/interfaces
 
@@ -250,7 +248,7 @@ The next OVS command will kick you out from this server (if connected to it via 
 
     apt-get install ubuntu-cloud-keyring python-software-properties mysql-server python-mysqldb ntp curl openssl rabbitmq-server python-keyring
 
-Download the following line to
+Download `ubuntu-cloud-archive-juno-trusty.list`:
 
     wget -qO- https://raw.githubusercontent.com/tmartinx/openstack-guides/master/Juno/controller/etc/apt/sources.list.d/ubuntu-cloud-archive-juno-trusty.list > /etc/apt/sources.list.d/ubuntu-cloud-archive-juno-trusty.list
 
@@ -456,9 +454,9 @@ Run the following commands to add some O.S. images into your Glance repository.
 
 ### 3.3.5. Ubuntu 14.10:
 
-    glance image-create --location http://uec-images.ubuntu.com/releases/14.10/beta-2/ubuntu-14.10-beta2-server-cloudimg-1386.tar.gz --is-public true --disk-format qcow2 --container-format bare --name "BETA 2 - Ubuntu 14.10 - Utopic Unicorn - 32-bit - Cloud Based Image"
+    glance image-create --location http://uec-images.ubuntu.com/releases/14.10/release/ubuntu-14.10-server-cloudimg-i386-disk1.img --is-public true --disk-format qcow2 --container-format bare --name "Ubuntu 14.10 - Utopic Unicorn - 32-bit - Cloud Based Image"
 
-    glance image-create --location http://uec-images.ubuntu.com/releases/14.10/beta-2/ubuntu-14.10-beta2-server-cloudimg-amd64.tar.gz --is-public true --disk-format qcow2 --container-format bare --name "BETA 2 - Ubuntu 14.10 - Utopic Unicorn - 64-bit - Cloud Based Image"
+    glance image-create --location http://uec-images.ubuntu.com/releases/14.10/release/ubuntu-14.10-server-cloudimg-amd64-disk1.img --is-public true --disk-format qcow2 --container-format bare --name "Ubuntu 14.10 - Utopic Unicorn - 64-bit - Cloud Based Image"
 
 ### 3.3.5. CoreOS 472.0.0
 
