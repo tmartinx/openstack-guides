@@ -681,13 +681,21 @@ Run:
 
 ## 5.2. Create the OpenStack Neutron Network
 
-First, get the admin tenant id and note it (like var $ADMIN_TENTANT_ID).
+For the sake of simplicity, both management and instances networks, share the same IPv6 and IPv4 subnet. They are Dual-Stacked but, IPv4 is entirely optional, if you have IPv6.
 
-    keystone tenant-list
+When with IPv6, the life is easier, just enable SLAAC in your Network. Then, both Nodes (Management Network) and Instances will generate its own IPv6 address automatically, you'll want DNS here, or at least, a well configured `/etc/hosts` files. Plus, you might want to disable `IPv6 Privacy Extensions` within your Instances, since OpenStack Neutron does not have support for it.
+
+When with IPv4, the subnet 10.0.0.0/24 is subdivided into two, not by subnet mask, but instead, by using the Neutron option "--allocation-pool". So, from 10.0.0.1 to 10.0.0.128, resides the some `KVM Hypervisors` (`ubuntu-virt`) running things like the Gateway, Controler and Network nodes, also the Compute Nodes are others `KVM Hypervisors` running `nova-compute` and `Neutron OVS Agent`. And for your Instances, from 10.0.0.129 to 10.0.0.254.
+
+So, it is simpler, you just need one `Single Flat Network`, `Dual-Stacked`, IPv4 with DHCPv4 and IPv6 with SLAAC, for your entire Cloud Computing.
+
+Also, since we aren't using Neutron acting as a L3 Router, we don't need to deal with any extra IPv6/4 subnets. Remember, just 1 IPv6 (or IPv4) subnet is enough to start using OpenStack, very minimalist and stable. Then you can start playing with `VLAN Provider Networks` and later, with topologies like `Per-Tenant Router with Private Networks`, just like the docs.openstack.org/juno presents.
 
 ### 5.2.1. Creating the Flat Neutron Network
 
-Previous versions of this Quick Guide, had two IPv4 subnets, one for OpenStack Management and Physical Serves (10.0.0.0/24), and another for the Instances (10.33.14.0/24). But now, we have only one IPv4 subnet for everything (which is 10.0.0.0/24), for both Openstack Management and Instances, less subnets to deal with, so, the subdivision of the IP ranges comes now from the neutron "--allocation-pool" option. This way, it will be easier to introduce IPv6.
+First, get the admin tenant id and note it (like var $ADMIN_TENTANT_ID).
+
+    keystone tenant-list
 
 Mapping the physical network, that one from your "border gateway", into OpenStack Neutron:
  
@@ -699,7 +707,7 @@ Create an IPv4 subnet on "sharednet1":
 
 Create an IPv6 subnet on "sharednet1":
 
-    neutron subnet-create --ip-version 6 --ipv6_address_mode=slaac --tenant-id a4f6f6785e384d00b6744bed8a31c051 sharednet1 2001:1291:2bf:fffe::/64
+    neutron subnet-create --ip-version 6 --ipv6_address_mode=slaac --tenant-id a4f6f6785e384d00b6744bed8a31c051 sharednet1 2001:db8:1::/64
 
 ### Document references
 
