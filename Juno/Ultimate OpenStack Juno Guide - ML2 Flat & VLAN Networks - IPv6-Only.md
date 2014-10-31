@@ -360,7 +360,7 @@ Test Keystone with basic option to see if it works:
 
     keystone tenant-list
 
-### Document references
+### Documentation Reference
 
  * http://docs.openstack.org/juno/install-guide/install/apt/content/keystone-install.html
 
@@ -482,7 +482,7 @@ If you need to run Windows 2012 in your OpenStack, visit: http://cloudbase.it/ws
     
     glance image-list
 
-### Document references
+### Documentation Reference
 
  * http://docs.openstack.org/juno/install-guide/install/apt/content/glance-install.html
 
@@ -561,7 +561,7 @@ Create new flavors:
     nova flavor-create --ephemeral 400 --swap 0 --rxtx-factor 1.0 --is-public yes w1.large 20 4096 40 4
     nova flavor-create --ephemeral 800 --swap 0 --rxtx-factor 1.0 --is-public yes w1.xlarge 21 8192 40 8
 
-### Document references
+### Documentation Reference
 
  * http://docs.openstack.org/juno/install-guide/install/apt/content/ch_nova.html
 
@@ -709,7 +709,7 @@ Create an IPv6 subnet on "sharednet1":
 
     neutron subnet-create --ip-version 6 --ipv6_address_mode=slaac --tenant-id a4f6f6785e384d00b6744bed8a31c051 sharednet1 2001:db8:1::/64
 
-### Document references
+### Documentation Reference
 
  * http://docs.openstack.org/juno/install-guide/install/apt/content/neutron-controller-node.html
 
@@ -748,7 +748,7 @@ Install Cinder Volume:
 
     apt-get install cinder-volume
 
-### Document references
+### Documentation Reference
 
  * http://docs.openstack.org/juno/install-guide/install/apt/content/cinder-install-controller-node.html
 
@@ -774,7 +774,7 @@ Run:
 
 Done! You can try to access the Dashboard to test admin login...
 
-### Document references
+### Documentation Reference
 
  * http://docs.openstack.org/juno/install-guide/install/apt/content/install_dashboard.html
 
@@ -944,7 +944,7 @@ Run:
 
     cd /etc/init/; for i in $(ls nova-* | cut -d \. -f 1 | xargs); do sudo service $i restart; done
 
-### Document references
+### Documentation Reference
 
  * http://docs.openstack.org/juno/install-guide/install/apt/content/ch_nova.html#nova-compute-install
 
@@ -1015,7 +1015,7 @@ Run:
 
     service neutron-plugin-openvswitch-agent restart
 
-### Document references
+### Documentation Reference
 
  * http://docs.openstack.org/juno/install-guide/install/apt/content/neutron-compute-node.html
 
