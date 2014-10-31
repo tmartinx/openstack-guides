@@ -146,7 +146,7 @@ Install a Ubuntu 14.04.1 with at least two network cards (can be a small virtual
 
     * IPv4 (Legacy)
 
-        * IP addresses: 10.32.14.1/24 (Management + Instances)
+        * IP addresses: 10.0.0.1/24 (Management + Instances)
 
 ## 1.2. Example of its /etc/network/interfaces file
 
@@ -207,8 +207,8 @@ The OpenStack Controller Node is powered by Ubuntu 14.04.1!
 
 * IPv4 - Legacy
 
-    * IP Address: 10.32.14.10/24
-    * Gateway IP: 10.32.14.1
+    * IP Address: 10.0.0.10/24
+    * Gateway IP: 10.0.0.1
 
 Install Ubuntu 14.04.1 on the first disk, can be the  *Minimum Virtual Machine* flavor, using *Guided LVM Paritioning*, leave the second disk untouched for now (it will be used with Cinder).
 
@@ -254,7 +254,7 @@ Download `ubuntu-cloud-archive-juno-trusty.list`:
 
 Run:
 
-    apt-get updat
+    apt-get update
     
     apt-get dist-upgrade -y
 
@@ -633,7 +633,7 @@ With:
 
     [ovs]
     enable_tunneling = False
-    local_ip = 10.32.14.10
+    local_ip = 10.0.0.11
     network_vlan_ranges = physnet1
     bridge_mappings = physnet1:br-eth0
 
@@ -654,7 +654,7 @@ With:
     admin_user = neutron
     admin_password = service_pass
 
-    nova_metadata_ip = 10.32.14.10
+    nova_metadata_ip = 10.0.0.11
     nova_metadata_port = 8775
     metadata_proxy_shared_secret = metasecret13
 
@@ -687,7 +687,7 @@ First, get the admin tenant id and note it (like var $ADMIN_TENTANT_ID).
 
 ### 5.2.1. Creating the Flat Neutron Network
 
-Previous versions of this Quick Guide, had two IPv4 subnets, one for OpenStack Management and Physical Serves (10.32.14.0/24), and another for the Instances (10.33.14.0/24). But now, we have only one IPv4 subnet for everything (which is 10.32.14.0/24), for both Openstack Management and Instances, less subnets to deal with, so, the subdivision of the IP ranges comes now from the neutron "--allocation-pool" option. This way, it will be easier to introduce IPv6.
+Previous versions of this Quick Guide, had two IPv4 subnets, one for OpenStack Management and Physical Serves (10.0.0.0/24), and another for the Instances (10.33.14.0/24). But now, we have only one IPv4 subnet for everything (which is 10.0.0.0/24), for both Openstack Management and Instances, less subnets to deal with, so, the subdivision of the IP ranges comes now from the neutron "--allocation-pool" option. This way, it will be easier to introduce IPv6.
 
 Mapping the physical network, that one from your "border gateway", into OpenStack Neutron:
  
@@ -695,7 +695,7 @@ Mapping the physical network, that one from your "border gateway", into OpenStac
 
 Create an IPv4 subnet on "sharednet1":
 
-    neutron subnet-create --ip-version 4 --tenant-id $ADMIN_TENANT_ID sharednet1 10.32.14.0/24 --allocation-pool start=10.32.14.129,end=10.32.14.254 --dns_nameservers list=true 8.8.4.4 8.8.8.8
+    neutron subnet-create --ip-version 4 --tenant-id $ADMIN_TENANT_ID sharednet1 10.0.0.0/24 --allocation-pool start=10.0.0.129,end=10.0.0.254 --dns_nameservers list=true 8.8.4.4 8.8.8.8
 
 Create an IPv6 subnet on "sharednet1":
 
@@ -791,8 +791,8 @@ This OpenStack Compute Node is powered by Ubuntu 14.04.1!
 
 * IPv4 - Legacy
 
-    * IP address: 10.32.14.20/24
-    * Gateway IP: 10.32.14.1
+    * IP address: 10.0.0.31/24
+    * Gateway IP: 10.0.0.1
 
 ## 8.1. Install Ubuntu 14.04.1
 
@@ -860,9 +860,9 @@ With:
     2001:db8:1::30  compute-2.yourdomain.com   compute-2
 
     # IPv4 - Not needed:
-    #10.32.14.10    controller.yourdomain.com   controller
-    #10.32.14.20    compute-1.yourdomain.com   compute-1
-    #10.32.14.30    compute-2.yourdomain.com   compute-2
+    #10.0.0.11    controller.yourdomain.com   controller
+    #10.0.0.31    compute-1.yourdomain.com   compute-1
+    #10.0.0.41    compute-2.yourdomain.com   compute-2
 
 Edit:
 
@@ -899,9 +899,9 @@ With:
 
     # IPv4 - Legacy
     iface br-eth0 inet static
-        address 10.32.14.20
+        address 10.0.0.31
         netmask 24
-        gateway 10.32.14.1
+        gateway 10.0.0.1
         # Google Public DNS
     	dns-nameservers 8.8.4.4
         # OpenDNS
@@ -999,7 +999,7 @@ With:
 
     [ovs]
     enable_tunneling = False
-    local_ip = 10.32.14.20
+    local_ip = 10.0.0.31
     network_vlan_ranges = physnet1
     bridge_mappings = physnet1:br-eth0
 
@@ -1034,12 +1034,12 @@ Something like this will appear:
     +--------------------------------------+-------------+--------+------------+-------------+----------------------------------------------+
     | ID                                   | Name        | Status | Task State | Power State | Networks                                     |
     +--------------------------------------+-------------+--------+------------+-------------+----------------------------------------------+
-    | 0460d770-372a-4549-80db-ccbafddda22c | ubuntu-1    | ACTIVE | -          | Running     | sharednet1=2001:db8:1::8000, 10.32.14.130    |
+    | 0460d770-372a-4549-80db-ccbafddda22c | ubuntu-1    | ACTIVE | -          | Running     | sharednet1=2001:db8:1::8000, 10.0.0.130    |
     +--------------------------------------+-------------+--------+------------+-------------+----------------------------------------------+
 
 Go there and configure the IPv6 statically:
 
-    ssh ubuntu@10.32.14.130
+    ssh ubuntu@10.0.0.130
     sudo ip -6 a a 2001:db8:1::8000/64 dev eth0
     sudo ip -6 r a default via 2001:db8:1::1
     
@@ -1070,7 +1070,7 @@ With:
 
 # Well Done!
 
-Point mycloud.yourdomain.com to 2001:db8:1::10 (and/or 10.32.14.10) and open
+Point mycloud.yourdomain.com to 2001:db8:1::10 (and/or 10.0.0.11) and open
 the *Horizon Dashboard* at:
 
 http://mycloud.yourdomain.com/horizon - user admin, pass admin_pass
