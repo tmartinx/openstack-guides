@@ -1,4 +1,4 @@
-OP DATABASE IF EXISTS keystone;
+DROP DATABASE IF EXISTS keystone;
 CREATE DATABASE keystone;
 GRANT ALL ON keystone.* TO 'keystoneUser'@'%' IDENTIFIED BY 'keystonePass';
 

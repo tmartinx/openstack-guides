@@ -1,10 +1,10 @@
 # Ultimate OpenStack Juno Guide
 
-This is a Quick Guide to deploy OpenStack Juno on top of Ubuntu 14.04.1, it is IPv6-Only (almost)!
+This is a Quick Guide to deploy OpenStack Juno on top of Ubuntu 14.04.1, it is IPv6-Only (almost)! But, it can be used to deploy a IPv4-Only environment, just replace the IPs with `sed`.
 
 It is compliant with OpenStack's official documentation (docs.openstack.org/juno).
 
-The tenant's subnets are based on Neutron, with ML2 plugin and `Single Flat Network` topology, Dual-Stacked. The topology `VLAN Provider Networks` are also supported on this guide, it is very similar with `Single Flat Network`.
+The Project's (old "Tenant" terminology) subnets are based on Neutron, with ML2 plugin and `Single Flat Network` topology, Dual-Stacked, while of course, IPv4 is optional. The topology `VLAN Provider Networks` are also supported on this guide, it is very similar with `Single Flat Network`.
 
 The `Single Flat Network` is the simplest network topology supported by OpenStack. So, it is easier to understand and follow. Then, you can start using `VLAN Provider Networks`, which is basically something like a "Multi-(Single Flat Network)", where each "Flat LAN" resides on its own VLAN tag.
 
@@ -36,11 +36,15 @@ This is a "step-by-step", a "cut-and-paste" guide.
 * Floating IPs;
 * GRE or VXLAN tunnels.
 
-## Bitcoin Donations Accepted!
+## Donations Accepted... Bitcoins, Litecoins or Namecoins!
 
-If you think that this guide is great! Please, consider a Bitcoin donation to the following address:
+If you think that this guide is great! Please, consider a (micro)-Bitcoin (Litecoins or Namecoins are also welcome) donation to the following address:
 
-Bitcoin Address: `1JpNbLczAhUkbqQMv9iaQksiTd8yLaDx6K`
+* Bitcoin Address: `1JpNbLczAhUkbqQMv9iaQksiTd8yLaDx6K`
+
+* Litecoin Address: `LTsHiv2LhTBYAYy9qjFrvohdtTEDSeym9M`
+
+* Namecoin Address: `NHscBRrH7cCH4mboHt6zZnvyrAvTDn3UcM`
 
 ## Index
 
@@ -116,9 +120,9 @@ Bitcoin Address: `1JpNbLczAhUkbqQMv9iaQksiTd8yLaDx6K`
 
 This lab have an Ubuntu acting as a "Provider Networking - Upstream SLAAC Router", withit have two ethernet cards, with our WAN ISP attached to eth0, and behind it (eth1), will sit the entire OpenStack infrastructure (i.e. "The Cloud", controllers, network and compute nodes, instances and regular servers).
 
-This Firewall Ubuntu might have the package **aiccu** installed, so, you'll have at least, one IPv6 /64 block to play with (if you don't have it native from your ISP already, get one from SixxS.net and start using it with **aiccu**).
+This **Firewall Ubuntu** might have the package **aiccu** installed, so, you'll have at least, one IPv6 /64 block to play with (if you don't have it native from your ISP already, get one from SixxS.net and start using it with **aiccu**).
 
-Also, if you go with IPv6, you'll need the package **radvd** installed here, so, you'll be able to advertise your IPv6 blocks within your (V)LAN, including your Project's Instances. And, for the Ubuntu IPv6 clients (including future IPv6-Only Instances), you'll also need the package **rdnssd** to auto-configure the Instance's /etc/resolv.conf file according.
+Also, if you go with IPv6, you'll need the package **radvd** installed here, so, you'll be able to advertise your IPv6 blocks within your (V)LAN, including your Project's Instances Network. And, for the Ubuntu IPv6 clients (including IPv6-Only Instances), you'll also need the package **rdnssd** to auto-configure Instance's /etc/resolv.conf file according (it will receive the *DNS Nameservers* from **radvd**).
 
 ## 1.1. Gateway (Ubuntu 14.04.1)
 
@@ -152,7 +156,7 @@ Install a Ubuntu 14.04.1 with at least two network cards (can be a small virtual
 
 Get it here (example):
 
-    wget https://raw.githubusercontent.com/tmartinx/openstack-guides/master/Juno/upstream-router/etc/network/interfaces
+    curl -s https://raw.githubusercontent.com/tmartinx/openstack-guides/master/Juno/upstream-router/etc/network/interfaces > /etc/network/interfaces
 
 ## 1.3. Enable IPv6 / IPv4 packet forwarding
 
@@ -168,7 +172,7 @@ OpenStack Juno is now compatible with an upstream SLAAC router.
 
 Get it here (example):
 
-    wget https://raw.githubusercontent.com/tmartinx/openstack-guides/master/Juno/upstream-router/etc/radvd.conf
+    curl -s https://raw.githubusercontent.com/tmartinx/openstack-guides/master/Juno/upstream-router/etc/radvd.conf > /etc/radvd.conf
 
 Install the following package (RA Daemon):
 
@@ -176,13 +180,15 @@ Install the following package (RA Daemon):
 
 Now both your LAN and your Cloud, have IPv6! Have fun!
 
+NOTE: You'll might want to disable IPv6 Privace Extensions.
+
 ## 1.5. NAT rule (Legacy)
 
     iptables -t nat -A POSTROUTING -o eth0 -j MASQUERADE
 
 *NOTE #1: There is only 1 NAT rule on this environment, which resides on this gateway itself, to do the IPv4 SNAT/DNAT to/from the old Internet infrastructure. There is no IPv4 NAT within this OpenStack environment itself (no Floating IPs, "no multihost=true"). Also, there is no NAT when enjoying the New Internet Powered by IPv6!*
 
-*NOTE #2: If your have more IPv4 public blocks available (i.e. at your gateway's eth1 interface, your Instances can also have public IPs on it!*
+*NOTE #2: If your have more IPv4 public blocks available (i.e. at your gateway's eth1 interface, your Instances can also have public IPs on it! Just like when with IPv6...*
 
 ---
 
@@ -190,15 +196,18 @@ Now both your LAN and your Cloud, have IPv6! Have fun!
 
 # 2. Deploying the Controller Node
 
+Run this procedure logged in as `root` user.
+
 The OpenStack Controller Node is powered by Ubuntu 14.04.1!
 
 * Requirements:
 
+    * Hostname: controller.yourdomain.com
+    * 64 bits O.S. Highly Recommended
     * 1 Virtual Machine (KVM/Xen) with 2G of RAM
     * 1 Virtual Ethernet VirtIO Card
-    * 2 Virtual VirtIO HDs about 100G each (one for Ubuntu / Nova / Glance and another for Cinder)
-    * Hostname: controller.yourdomain.com
-    * 64 bits O.S. Recommended
+    * 1 Virtual VirtIO HD ~100G (for Ubuntu / Nova / Glance)
+    * 1 (Optional) Virtual VirtIO HD ~100G (for Cinder)
 
 * IPv6
 
@@ -214,11 +223,11 @@ Install Ubuntu 14.04.1 on the first disk, can be the  *Minimum Virtual Machine* 
 
 ## 2.1. Prepare Ubuntu O.S.
 
-Login as root and run:
+Run:
 
     echo controller > /etc/hostname
 
-    wget -qO- https://raw.githubusercontent.com/tmartinx/openstack-guides/master/Juno/controller/etc/hosts > /etc/hosts
+    curl -s https://raw.githubusercontent.com/tmartinx/openstack-guides/master/Juno/controller/etc/hosts > /etc/hosts
 
     apt-get update
     
@@ -228,11 +237,9 @@ Login as root and run:
 
 ## 2.2. Configure the network
 
-Login as root.
-
 Get your Controller Node network interfaces file (example):
 
-    wget -qO- https://raw.githubusercontent.com/tmartinx/openstack-guides/master/Juno/controller/etc/network/interfaces > /etc/network/interfaces
+    curl -s https://raw.githubusercontent.com/tmartinx/openstack-guides/master/Juno/controller/etc/network/interfaces > /etc/network/interfaces
 
 Run:
 
@@ -240,35 +247,40 @@ Run:
 
     ovs-vsctl add-br br-eth0
 
-The next OVS command will kick you out from this server (if connected to it via eth0), that's why we should reboot after running it:
+The next OVS command will kick you out from this server (if you're connected to it via eth0), that's why we should reboot after running it:
 
     ovs-vsctl add-port br-eth0 eth0 && reboot
 
 ## 2.3. Install OpenStack "base" dependecies
 
-    apt-get install ubuntu-cloud-keyring python-software-properties mysql-server python-mysqldb ntp curl openssl rabbitmq-server python-keyring
+Download `ubuntu-cloud-archive-juno-trusty.list` file:
 
-Download `ubuntu-cloud-archive-juno-trusty.list`:
-
-    wget -qO- https://raw.githubusercontent.com/tmartinx/openstack-guides/master/Juno/controller/etc/apt/sources.list.d/ubuntu-cloud-archive-juno-trusty.list > /etc/apt/sources.list.d/ubuntu-cloud-archive-juno-trusty.list
+    curl -s https://raw.githubusercontent.com/tmartinx/openstack-guides/master/Juno/controller/etc/apt/sources.list.d/ubuntu-cloud-archive-juno-trusty.list > /etc/apt/sources.list.d/ubuntu-cloud-archive-juno-trusty.list
 
 Run:
 
+    apt-get install ubuntu-cloud-keyring python-software-properties
+
     apt-get update
-    
+
     apt-get dist-upgrade -y
+
+    apt-get install openssl curl ntp mysql-server python-mysqldb rabbitmq-server python-keyring
+
 
 Configure it:
 
-Replace RABBIT_PASS with a suitable password.
+Replace `guest` password (syntax is: user / pass, guest / guest).
 
     rabbitmqctl change_password guest guest
 
-Reconfigure MySQL by running my.cnf:
+*NOTE: If you replace the RabbitMQ `guest` password, you'll need to update all configuration files manually.*
 
-    wget -qO- https://raw.githubusercontent.com/tmartinx/openstack-guides/master/Juno/controller/etc/mysql/my.cnf > /etc/mysql/my.cnf
+Reconfigure MySQL by downloading a new `my.cnf`:
 
-Creating the required databases:
+    curl -s https://raw.githubusercontent.com/tmartinx/openstack-guides/master/Juno/controller/etc/mysql/my.cnf > /etc/mysql/my.cnf
+
+Restart MySQL:
 
     service mysql restart
 
@@ -278,9 +290,11 @@ Make your MySQL a bit safer:
 
     mysql_secure_installation
 
-Now make the required databases:
+Pay attention on next step, it will remove all your OpenStack Databases ("factory reset"), before creating it again.
 
-    wget -qO- https://raw.githubusercontent.com/tmartinx/openstack-guides/master/Juno/controller/root/mysql-dbs.sql | mysql -u root -p
+Create/reset the required databases:
+
+    curl -s https://raw.githubusercontent.com/tmartinx/openstack-guides/master/Juno/controller/root/mysql-dbs.sql | mysql -u root -p
 
 ### Documentation reference
 
@@ -313,7 +327,7 @@ Then run:
 
     service keystone restart
 
-Create Keystone basics and endpoints:
+Keystone stuff:
 
     cd ~
 
@@ -324,6 +338,8 @@ Create Keystone basics and endpoints:
     chmod +x keystone_basic.sh
 
     chmod +x keystone_endpoints_basic.sh
+
+Create Keystone "basic" stuff and OpenStack's endpoints:
 
     ./keystone_basic.sh
 
@@ -337,7 +353,7 @@ You might want to cleanup your expired tokens, otherwise, your database will inc
 
     (crontab -l 2>&1 | grep -q token_flush) || echo '@hourly /usr/bin/keystone-manage token_flush >/var/log/keystone/keystone-tokenflush.log 2>&1' >> /var/spool/cron/crontabs/root
 
-Create your NOVA Resource Configuration file:
+Download the NOVA Resource Configuration file of your `admin` user:
 
     cd ~
     wget https://raw.githubusercontent.com/tmartinx/openstack-guides/master/Juno/controller/root~/.novarc
@@ -346,7 +362,7 @@ Append to your bashrc:
 
     vi ~/.bashrc
 
-With:
+This:
 
     if [ -f ~/.novarc ]; then
         . ~/.novarc
@@ -511,10 +527,6 @@ Run:
     rm /var/lib/nova/nova.sqlite
 
     su -s /bin/sh -c "nova-manage db sync" nova
-
-I figured out that *Nova SPICE Proxy* doesn't listen on a Dual-Stacked setup, even after configuring it at nova.conf, something is wrong with it (BUG LP #1308418), so, just patch the spicehtml2proxy.py file to force it listen on both IPv4 and IPv6, like this:
-
-    sed -i 's/0.0.0.0/::/' /usr/lib/python2.7/dist-packages/nova/cmd/spicehtml5proxy.py
 
 Now, you can restart all Nova services:
 
