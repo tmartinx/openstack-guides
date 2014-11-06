@@ -305,19 +305,9 @@ Create/reset the required databases:
 
     apt-get install keystone
 
-Edit the keystone.conf and and change it for this:
+Download a new `keystone.conf` (it is based on Juno Ubuntu packages, plus a few changes):
 
-    vi /etc/keystone/keystone.conf
-
-File contents:
-
-    [DEFAULT]
-    admin_token = ADMIN
-
-    bind_host = 2001:db8:1::10
-
-    [database]
-    connection = mysql://keystoneUser:keystonePass@controller.yourdomain.com/keystone
+    curl -s https://raw.githubusercontent.com/tmartinx/openstack-guides/master/Juno/controller/etc/keystone/keystone.conf > /etc/keystone/keystone.conf
 
 Then run:
 
