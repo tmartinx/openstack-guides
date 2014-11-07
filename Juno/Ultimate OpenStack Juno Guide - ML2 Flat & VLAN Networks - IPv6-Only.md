@@ -48,7 +48,7 @@ If you think that this guide is great! Please, consider a (micro)-Bitcoin (Litec
 
 ## Index
 
-### 1. First things first, the border gateway
+### 1. First things first, the upstream router
 #### 1.1. Gateway (Ubuntu 14.04.1)
 #### 1.2. Example of its /etc/network/interfaces file
 #### 1.3. Enable IPv6 / IPv4 packet forwarding
@@ -108,7 +108,7 @@ If you think that this guide is great! Please, consider a (micro)-Bitcoin (Litec
 ### 13. Features
 
 ### 14. Observations
-#### 14.1. About external router (provider / upstream)
+#### 14.1. About upstream router
 #### 14.2. About IPv6
 #### 14.3. About IPv4
 #### 14.4. About NAT
@@ -317,7 +317,7 @@ Then run:
 
     service keystone restart
 
-Keystone stuff:
+More Keystone stuff:
 
     cd ~
 
@@ -339,13 +339,14 @@ Preliminary Keystone test
 
     curl http://controller.yourdomain.com:35357/v2.0/endpoints -H 'x-auth-token: ADMIN' | python -m json.tool
 
-You might want to cleanup your expired tokens, otherwise, your database will increase in size indefinitely. So, do this:
+You might want to cleanup your expired tokens with a cronjob, otherwise, your database will increase in size indefinitely. So, do this:
 
     (crontab -l 2>&1 | grep -q token_flush) || echo '@hourly /usr/bin/keystone-manage token_flush >/var/log/keystone/keystone-tokenflush.log 2>&1' >> /var/spool/cron/crontabs/root
 
-Download the NOVA Resource Configuration file of your `admin` user:
+Download the `NOVA Resource Configuration` file of your `admin` user:
 
     cd ~
+
     wget https://raw.githubusercontent.com/tmartinx/openstack-guides/master/Juno/controller/root~/.novarc
 
 Append to your bashrc:
@@ -362,7 +363,7 @@ Then, load it:
 
     source ~/.bashrc
 
-Test Keystone with basic option to see if it works:
+Test Keystone with a very basic option to see if it works:
 
     keystone tenant-list
 
@@ -464,7 +465,7 @@ Run the following commands to add some O.S. images into your Glance repository.
 
     glance image-create --location http://uec-images.ubuntu.com/releases/14.10/release/ubuntu-14.10-server-cloudimg-amd64-disk1.img --is-public true --disk-format qcow2 --container-format bare --name "Ubuntu 14.10 - Utopic Unicorn - 64-bit - Cloud Based Image"
 
-### 3.3.5. CoreOS 472.0.0
+### 3.3.5. CoreOS 493.0.0
 
 Info: https://coreos.com
 
@@ -474,7 +475,7 @@ Info: https://coreos.com
 
     bunzip2 coreos_production_openstack_image.img.bz2
 
-    glance image-create --name "CoreOS 472.0.0 - Linux 3.16.2 - Docker 1.3.0 - etcd 0.4.6 - fleet 0.8.1" --container-format ovf --disk-format qcow2 --file coreos_production_openstack_image.img --is-public True
+    glance image-create --name "CoreOS 493.0.0 - Linux 3.17.2 - Docker 1.3.1 - etcd 0.4.6 - fleet 0.8.1" --container-format ovf --disk-format qcow2 --file coreos_production_openstack_image.img --is-public True
 
 ### 3.3.6. Windows 2012 R2:
 
@@ -1093,6 +1094,7 @@ You have your own Private Cloud Computing Environment up and running! With IPv6!
 
 # 10. TODO List
 
+* Ubuntu Flex container
 * Heat
 * Ceilometer
 * Trove
@@ -1109,15 +1111,11 @@ You have your own Private Cloud Computing Environment up and running! With IPv6!
 
 - OpenStack `Single Flat Network` documentation:
 
- http://docs.openstack.org/trunk/install-guide/install/apt/content/section_neutron-single-flat.html
+ http://docs.openstack.org/trunk/install-guide/install/apt/content/section_use-cases-single-flat.html
 
-- About IPv6 for OpenStack:
+- OpenStack `Multi Flat Network` documentation:
 
- http://www.nephos6.com/pdf/OpenStack-Havana-on-IPv6.pdf
-
-- Inspired by:
-
- http://openstack-folsom-install-guide.readthedocs.org/en/latest/
+ http://docs.openstack.org/trunk/install-guide/install/apt/content/section_use-cases-multi-flat.html
 
 # 12. Limitations
 
@@ -1129,9 +1127,9 @@ You have your own Private Cloud Computing Environment up and running! With IPv6!
 
 # 14. Observations
 
-## 14.1. About external router (provider / upstream)
+## 14.1. About upstream router
 
-The "border gateway / external router" (dual-stacked, default route, for both physical serves and instances) is located outside of the cloud. This means that we're *mapping our physical network into OpenStack*, using ML2 plugin with *Single Flat Network* topology.
+The "upstream router" is located outside of OpenStack's control, it is dual-stacked, and the default route for both physical serves and instances. This means that we're *mapping our physical network into OpenStack*, using ML2 plugin with *Single Flat Network* topology (also *VLAN Provider Network* is supported).
 
 ## 14.2. About IPv6
 
@@ -1139,11 +1137,13 @@ For tenant's subnet, the "border gateway / external router" have the IPv6 Router
 
 ## 14.3. About IPv4
 
-When using OpenStack Juno, there is only one place that IPv4 is still required: For the Metadata Network. So, the tenants will still have IPv4 connectivity, just to put Metadata to work. This will be required until `cloud-init`, and OpenStack itself, doesn't provides "Metadata over IPv6" support.
+When using OpenStack Juno, there is only one place that IPv4 is still required: For the Metadata Network. So, the tenants still needs IPv4 connectivity, just to put Metadata to work. This will be required until `cloud-init`, and OpenStack itself, doesn't provides "Metadata over IPv6" support.
+
+*NOTE: Now with Juno, there is a new Metadata option, called "Config Drive", it seems to be possible to use it in place of current IPv4 subnet (169.254.169.254). I'll try it soon!*
 
 Everything else, is IPv6-Only, as expected.
 
-Nevertheless, if you don't want to play with IPv6, you can safely replace all IPv6 address of this guide, by your IPv4, that things will work as before.
+Nevertheless, if you don't want to play with IPv6, you can safely replace all IPv6 address of this guide, with your IPv4, everything will work as expected.
 
 ## 14.4. About NAT
 
@@ -1153,7 +1153,9 @@ One last word about NAT: it breaks the end-to-end Internet connectivity, effecti
 
 ## 14.5. About configuration files
 
-The config file examples are supposed to be added to the respective files, it is not a entire config file replacement. Keep the rest of the original files intact when possible (i.e. when not duplicating the entries).
+The configuration files that you downloaded using `curl -s` are the complete original files, from Ubuntu Cloud Archive packages, plus our customizations.
+
+You can easily see the differences between the files from the guide, with the files from the packages, just use `diff -Nru /etc/neutron/neutron.conf juno-guide-example-neutron.conf`.
 
 You might want to replace the domain `yourdomain.com` with your own real `domain.com`.
 
