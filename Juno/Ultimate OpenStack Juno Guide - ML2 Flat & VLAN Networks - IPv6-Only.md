@@ -67,7 +67,7 @@ If you think that this guide is great! Please, consider a (micro)-Bitcoin (Litec
 #### 3.3. Adding O.S. images into your Glance
 ##### 3.3.1. CirrOS (Optional - TestVM)
 ##### 3.3.2. Ubuntu 13.10
-##### 3.3.3. Ubuntu 12.04.4 - LTS
+##### 3.3.3. Ubuntu 12.04.5 - LTS
 ##### 3.3.4. Ubuntu 14.04.1 - LTS
 ##### 3.3.5. Ubuntu 14.10
 ##### 3.3.5. CoreOS
@@ -580,7 +580,13 @@ Create new flavors (Storage / SSD):
     nova flavor-create --ephemeral 40 --swap 2048 --rxtx-factor 1.0 --is-public yes m3.large 30 4096 10 4
     nova flavor-create --ephemeral 80 --swap 4096 --rxtx-factor 1.0 --is-public yes m3.xlarge 31 8192 10 8
 
-*NOTE: Soon as possible, I'll introduce Host Aggregates, when instances based on SSD disks will be deployed on Compute Nodes that have SSD...*
+    # Windows optimized
+    nova flavor-create --ephemeral 10 --swap 0 --rxtx-factor 1.0 --is-public yes w3.small 32 1024 20 1
+    nova flavor-create --ephemeral 20 --swap 0 --rxtx-factor 1.0 --is-public yes w3.medium 33 2048 20 2
+    nova flavor-create --ephemeral 40 --swap 0 --rxtx-factor 1.0 --is-public yes w3.large 34 4096 40 4
+    nova flavor-create --ephemeral 80 --swap 0 --rxtx-factor 1.0 --is-public yes w3.xlarge 35 8192 40 8
+
+*NOTE: Soon as possible, I'll introduce Host Aggregates, when instances based on SSD disks will be deployed on Compute Nodes that have SSD, using this feature.*
 
 ### Documentation Reference
 
@@ -848,6 +854,8 @@ When prompted to create a *supermin* appliance, respond **yes**.
 make the current kernel readable (BUG LP #759725):
 
     dpkg-statoverride --update --add root root 0644 /boot/vmlinuz-$(uname -r)
+
+Remove pre-configured libvirt default network:
 
     virsh net-destroy default
 
