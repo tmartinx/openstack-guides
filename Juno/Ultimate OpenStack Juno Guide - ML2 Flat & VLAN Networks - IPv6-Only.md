@@ -513,9 +513,9 @@ Run:
 
     chmod 640 /etc/nova/nova.conf
 
-*NOTE: Edit your nova.conf file, before running "db sync", to reflect your own FQDN (*.yourdomain.com) and IPv6 address, if desired.*
-
     rm /var/lib/nova/nova.sqlite
+
+*NOTE: Edit your nova.conf file, before running "db sync", to reflect your own FQDN (*.yourdomain.com) and IPv6 address, if desired.*
 
     su -s /bin/sh -c "nova-manage db sync" nova
 
@@ -533,7 +533,7 @@ Delete the default examples:
     nova flavor-delete 4
     nova flavor-delete 5
 
-Create new flavors:
+Create new flavors (Storage / Hard Disk):
 
     # Standard Flavor
     nova flavor-create --ephemeral 0 --swap 128 --rxtx-factor 1.0 --is-public yes m1.micro 1 256 5 1
@@ -543,26 +543,44 @@ Create new flavors:
     nova flavor-create --ephemeral 200 --swap 2048 --rxtx-factor 1.0 --is-public yes m1.large 5 4096 10 4
     nova flavor-create --ephemeral 400 --swap 4096 --rxtx-factor 1.0 --is-public yes m1.xlarge 6 8192 10 8
 
+    # CPU optmized
+    nova flavor-create --ephemeral 50 --swap 512 --rxtx-factor 1.0 --is-public yes c1.small 7 1024 10 2
+    nova flavor-create --ephemeral 50 --swap 1024 --rxtx-factor 1.0 --is-public yes c1.medium 8 2048 10 4
+    nova flavor-create --ephemeral 50 --swap 2048 --rxtx-factor 1.0 --is-public yes c1.large 9 4096 10 8
+    nova flavor-create --ephemeral 50 --swap 4096 --rxtx-factor 1.0 --is-public yes c1.xlarge 10 8192 10 16
+
     # RAM Memory optimized
-    nova flavor-create --ephemeral 0 --swap 256 --rxtx-factor 1.0 --is-public yes r1.micro 7 512 5 1
-    nova flavor-create --ephemeral 25 --swap 512 --rxtx-factor 1.0 --is-public yes r1.tiny 8 1024 10 1
-    nova flavor-create --ephemeral 50 --swap 1024 --rxtx-factor 1.0 --is-public yes r1.small 9 2048 10 1
-    nova flavor-create --ephemeral 100 --swap 2048 --rxtx-factor 1.0 --is-public yes r1.medium 10 4096 10 2
-    nova flavor-create --ephemeral 200 --swap 4096 --rxtx-factor 1.0 --is-public yes r1.large 11 8192 10 4
-    nova flavor-create --ephemeral 400 --swap 8192 --rxtx-factor 1.0 --is-public yes r1.xlarge 12 16384 10 8
+    nova flavor-create --ephemeral 0 --swap 256 --rxtx-factor 1.0 --is-public yes r1.micro 11 512 5 1
+    nova flavor-create --ephemeral 25 --swap 512 --rxtx-factor 1.0 --is-public yes r1.tiny 12 1024 10 1
+    nova flavor-create --ephemeral 50 --swap 1024 --rxtx-factor 1.0 --is-public yes r1.small 13 2048 10 1
+    nova flavor-create --ephemeral 100 --swap 2048 --rxtx-factor 1.0 --is-public yes r1.medium 14 4096 10 2
+    nova flavor-create --ephemeral 200 --swap 4096 --rxtx-factor 1.0 --is-public yes r1.large 15 8192 10 4
+    nova flavor-create --ephemeral 400 --swap 8192 --rxtx-factor 1.0 --is-public yes r1.xlarge 16 16384 10 8
 
     # Storage optimized 
-    nova flavor-create --ephemeral 50 --swap 256 --rxtx-factor 1.0 --is-public yes s1.tiny 13 512 10 1
-    nova flavor-create --ephemeral 100 --swap 512 --rxtx-factor 1.0 --is-public yes s1.small 14 1024 10 1
-    nova flavor-create --ephemeral 200 --swap 1024 --rxtx-factor 1.0 --is-public yes s1.medium 15 2048 20 2
-    nova flavor-create --ephemeral 400 --swap 2048 --rxtx-factor 1.0 --is-public yes s1.large 16 4096 40 4
-    nova flavor-create --ephemeral 800 --swap 4096 --rxtx-factor 1.0 --is-public yes s1.xlarge 17 8192 80 8
+    nova flavor-create --ephemeral 50 --swap 256 --rxtx-factor 1.0 --is-public yes s1.tiny 17 512 10 1
+    nova flavor-create --ephemeral 100 --swap 512 --rxtx-factor 1.0 --is-public yes s1.small 18 1024 10 1
+    nova flavor-create --ephemeral 200 --swap 1024 --rxtx-factor 1.0 --is-public yes s1.medium 19 2048 20 2
+    nova flavor-create --ephemeral 400 --swap 2048 --rxtx-factor 1.0 --is-public yes s1.large 20 4096 40 4
+    nova flavor-create --ephemeral 800 --swap 4096 --rxtx-factor 1.0 --is-public yes s1.xlarge 21 8192 80 8
 
     # Windows optimized
-    nova flavor-create --ephemeral 100 --swap 0 --rxtx-factor 1.0 --is-public yes w1.small 18 1024 20 1
-    nova flavor-create --ephemeral 200 --swap 0 --rxtx-factor 1.0 --is-public yes w1.medium 19 2048 20 2
-    nova flavor-create --ephemeral 400 --swap 0 --rxtx-factor 1.0 --is-public yes w1.large 20 4096 40 4
-    nova flavor-create --ephemeral 800 --swap 0 --rxtx-factor 1.0 --is-public yes w1.xlarge 21 8192 40 8
+    nova flavor-create --ephemeral 100 --swap 0 --rxtx-factor 1.0 --is-public yes w1.small 22 1024 20 1
+    nova flavor-create --ephemeral 200 --swap 0 --rxtx-factor 1.0 --is-public yes w1.medium 23 2048 20 2
+    nova flavor-create --ephemeral 400 --swap 0 --rxtx-factor 1.0 --is-public yes w1.large 24 4096 40 4
+    nova flavor-create --ephemeral 800 --swap 0 --rxtx-factor 1.0 --is-public yes w1.xlarge 25 8192 40 8
+
+Create new flavors (Storage / SSD):
+
+    # Standard Flavor
+    nova flavor-create --ephemeral 0 --swap 128 --rxtx-factor 1.0 --is-public yes m3.micro 26 256 5 1
+    nova flavor-create --ephemeral 5 --swap 256 --rxtx-factor 1.0 --is-public yes m3.tiny 27 512 10 1
+    nova flavor-create --ephemeral 10 --swap 512 --rxtx-factor 1.0 --is-public yes m3.small 28 1024 10 1
+    nova flavor-create --ephemeral 20 --swap 1024 --rxtx-factor 1.0 --is-public yes m3.medium 29 2048 10 2
+    nova flavor-create --ephemeral 40 --swap 2048 --rxtx-factor 1.0 --is-public yes m3.large 30 4096 10 4
+    nova flavor-create --ephemeral 80 --swap 4096 --rxtx-factor 1.0 --is-public yes m3.xlarge 31 8192 10 8
+
+*NOTE: Soon as possible, I'll introduce Host Aggregates, when instances based on SSD disks will be deployed on Compute Nodes that have SSD...*
 
 ### Documentation Reference
 
