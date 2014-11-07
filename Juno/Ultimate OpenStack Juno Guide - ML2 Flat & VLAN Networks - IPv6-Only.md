@@ -347,7 +347,7 @@ Download the `NOVA Resource Configuration` file of your `admin` user:
 
     cd ~
 
-    wget https://raw.githubusercontent.com/tmartinx/openstack-guides/master/Juno/controller/root~/.novarc
+    wget https://raw.githubusercontent.com/tmartinx/openstack-guides/master/Juno/controller/root/.novarc
 
 Append to your bashrc:
 
