@@ -1,6 +1,6 @@
 # Ultimate OpenStack Juno Guide
 
-This is a Quick Guide to deploy OpenStack Juno on top of Ubuntu 14.04.1, it is IPv6-Only (almost)! But, it can be used to deploy a IPv4-Only environment, just replace the IPs with `sed`.
+This is a Quick Guide to deploy OpenStack Juno on top of Ubuntu 14.04.2, it is IPv6-Only (almost)! But, it can be used to deploy a IPv4-Only environment, just replace the IPs with `sed`.
 
 It is compliant with OpenStack's official documentation (docs.openstack.org/juno).
 
@@ -49,7 +49,7 @@ If you think that this guide is great! Please, consider a (micro)-Bitcoin (Litec
 ## Index
 
 ### 1. First things first, the upstream router
-#### 1.1. Gateway (Ubuntu 14.04.1)
+#### 1.1. Gateway (Ubuntu 14.04.2)
 #### 1.2. Example of its /etc/network/interfaces file
 #### 1.3. Enable IPv6 / IPv4 packet forwarding
 #### 1.4. Upstream IPv6 Router Advertisement (SLAAC)
@@ -68,7 +68,7 @@ If you think that this guide is great! Please, consider a (micro)-Bitcoin (Litec
 ##### 3.3.1. CirrOS (Optional - TestVM)
 ##### 3.3.2. Ubuntu 13.10
 ##### 3.3.3. Ubuntu 12.04.5 - LTS
-##### 3.3.4. Ubuntu 14.04.1 - LTS
+##### 3.3.4. Ubuntu 14.04.2 - LTS
 ##### 3.3.5. Ubuntu 14.10
 ##### 3.3.5. CoreOS
 ##### 3.3.6. Windows 2012 R2
@@ -91,7 +91,7 @@ If you think that this guide is great! Please, consider a (micro)-Bitcoin (Litec
 #### 6.2. Cinder iSCSI block storage service
 
 ### 8. Deploying your first Compute Node
-#### 8.1. Install Ubuntu 14.04.1
+#### 8.1. Install Ubuntu 14.04.2
 #### 8.2. Configure your Ubuntu KVM Hypervisor
 #### 8.3. Configure the network
 #### 8.4. Configure Nova
@@ -124,9 +124,9 @@ This **Firewall Ubuntu** might have the package **aiccu** installed, so, you'll 
 
 Also, if you go with IPv6, you'll need the package **radvd** installed here, so, you'll be able to advertise your IPv6 blocks within your (V)LAN, including your Project's Instances Network. And, for the Ubuntu IPv6 clients (including IPv6-Only Instances), you'll also need the package **rdnssd** to auto-configure Instance's /etc/resolv.conf file according (it will receive the *DNS Nameservers* from **radvd**).
 
-## 1.1. Gateway (Ubuntu 14.04.1)
+## 1.1. Gateway (Ubuntu 14.04.2)
 
-Install a Ubuntu 14.04.1 with at least two network cards (can be a small virtual machine).
+Install a Ubuntu 14.04.2 with at least two network cards (can be a small virtual machine).
 
 * Network Topology:
 
@@ -198,7 +198,7 @@ NOTE: You'll might want to disable IPv6 Privace Extensions.
 
 Run this procedure logged in as `root` user.
 
-The OpenStack Controller Node is powered by Ubuntu 14.04.1!
+The OpenStack Controller Node is powered by Ubuntu 14.04.2!
 
 * Requirements:
 
@@ -219,7 +219,7 @@ The OpenStack Controller Node is powered by Ubuntu 14.04.1!
     * IP Address: 10.0.0.10/24
     * Gateway IP: 10.0.0.1
 
-Install Ubuntu 14.04.1 on the first disk, can be the  *Minimum Virtual Machine* flavor, using *Guided LVM Paritioning*, leave the second disk untouched for now (it will be used with Cinder).
+Install Ubuntu 14.04.2 on the first disk, can be the  *Minimum Virtual Machine* flavor, using *Guided LVM Paritioning*, leave the second disk untouched for now (it will be used with Cinder).
 
 ## 2.1. Prepare Ubuntu O.S.
 
@@ -230,7 +230,7 @@ Run:
     curl -s https://raw.githubusercontent.com/tmartinx/openstack-guides/master/Juno/controller/etc/hosts > /etc/hosts
 
     apt-get update
-    
+
     apt-get dist-upgrade -y
 
     apt-get install vim iptables openvswitch-switch
@@ -253,15 +253,16 @@ The next OVS command will kick you out from this server (if you're connected to 
 
 ## 2.3. Install OpenStack "base" dependecies
 
-Download `ubuntu-cloud-archive-juno-trusty.list` file:
-
-    curl -s https://raw.githubusercontent.com/tmartinx/openstack-guides/master/Juno/controller/etc/apt/sources.list.d/ubuntu-cloud-archive-juno-trusty.list > /etc/apt/sources.list.d/ubuntu-cloud-archive-juno-trusty.list
+On next steps, you'll also add OpenStack Juno Cloud Archive repository.
 
 Run:
 
-    apt-get install ubuntu-cloud-keyring python-software-properties
 
     apt-get update
+
+    apt-get install ubuntu-cloud-keyring python-software-properties
+
+    sudo add-apt-repository cloud-archive:juno
 
     apt-get dist-upgrade -y
 
@@ -387,7 +388,7 @@ With:
 
     [DEFAULT]
     bind_host = 2001:db8:1::10
-    
+
     registry_host = controller.yourdomain.com
 
     rabbit_host = controller.yourdomain.com
@@ -401,7 +402,7 @@ With:
     admin_tenant_name = service
     admin_user = glance
     admin_password = service_pass
-    
+
     [paste_deploy]
     flavor = keystone
 
@@ -425,7 +426,7 @@ With:
     admin_tenant_name = service
     admin_user = glance
     admin_password = service_pass
-    
+
     [paste_deploy]
     flavor = keystone
 
@@ -453,11 +454,11 @@ Run the following commands to add some O.S. images into your Glance repository.
 
     glance image-create --location http://uec-images.ubuntu.com/releases/12.04.4/release/ubuntu-12.04-server-cloudimg-amd64-disk1.img --is-public true --disk-format qcow2 --container-format bare --name "Ubuntu 12.04.5 LTS - Precise Pangolin - 64-bit - Cloud Based Image"
 
-### 3.3.4. Ubuntu 14.04.1 - LTS:
+### 3.3.4. Ubuntu 14.04.2 - LTS:
 
-    glance image-create --location http://uec-images.ubuntu.com/releases/14.04/release/ubuntu-14.04-server-cloudimg-i386-disk1.img --is-public true --disk-format qcow2 --container-format bare --name "Ubuntu 14.04.1 LTS - Trusty Tahr - 32-bit - Cloud Based Image"
+    glance image-create --location http://uec-images.ubuntu.com/releases/14.04/release/ubuntu-14.04-server-cloudimg-i386-disk1.img --is-public true --disk-format qcow2 --container-format bare --name "Ubuntu 14.04.2 LTS - Trusty Tahr - 32-bit - Cloud Based Image"
 
-    glance image-create --location http://uec-images.ubuntu.com/releases/14.04/release/ubuntu-14.04-server-cloudimg-amd64-disk1.img --is-public true --disk-format qcow2 --container-format bare --name "Ubuntu 14.04.1 LTS - Trusty Tahr - 64-bit - Cloud Based Image"
+    glance image-create --location http://uec-images.ubuntu.com/releases/14.04/release/ubuntu-14.04-server-cloudimg-amd64-disk1.img --is-public true --disk-format qcow2 --container-format bare --name "Ubuntu 14.04.2 LTS - Trusty Tahr - 64-bit - Cloud Based Image"
 
 ### 3.3.5. Ubuntu 14.10:
 
@@ -486,7 +487,7 @@ If you need to run Windows 2012 in your OpenStack, visit: http://cloudbase.it/ws
     glance image-create --name "Windows Server 2012 R2 Standard Eval" --container-format bare --disk-format qcow2 --is-public true < /root/windows_server_2012_r2_standard_eval_kvm_20140607.qcow2
 
 ### 3.4. Listing the O.S. images:
-    
+
     glance image-list
 
 ### Documentation Reference
@@ -557,7 +558,7 @@ Create new flavors (Storage / Hard Disk):
     nova flavor-create --ephemeral 200 --swap 4096 --rxtx-factor 1.0 --is-public yes r1.large 15 8192 10 4
     nova flavor-create --ephemeral 400 --swap 8192 --rxtx-factor 1.0 --is-public yes r1.xlarge 16 16384 10 8
 
-    # Storage optimized 
+    # Storage optimized
     nova flavor-create --ephemeral 50 --swap 256 --rxtx-factor 1.0 --is-public yes s1.tiny 17 512 10 1
     nova flavor-create --ephemeral 100 --swap 512 --rxtx-factor 1.0 --is-public yes s1.small 18 1024 10 1
     nova flavor-create --ephemeral 200 --swap 1024 --rxtx-factor 1.0 --is-public yes s1.medium 19 2048 20 2
@@ -618,7 +619,7 @@ With:
     rpc_backend = rabbit
     core_plugin = ml2
     service_plugins = router
-    
+
     notify_nova_on_port_status_changes = True
     notify_nova_on_port_data_changes = True
     nova_url = http://controller.yourdomain.com:8774/v2
@@ -635,7 +636,7 @@ With:
     admin_user = neutron
     admin_password = service_pass
     signing_dir = $state_path/keystone-signing
-    
+
     [database]
     connection = mysql://neutronUser:neutronPass@controller.yourdomain.com/neutron
 
@@ -647,12 +648,12 @@ With:
 
     [ml2]
     type_drivers = local,flat
-    
+
     mechanism_drivers = openvswitch,l2population
-    
+
     [ml2_type_flat]
     flat_networks = *
-    
+
     [securitygroup]
     enable_security_group = True
     firewall_driver = neutron.agent.linux.iptables_firewall.OVSHybridIptablesFirewallDriver
@@ -665,7 +666,7 @@ With:
     bridge_mappings = physnet1:br-eth0
 
 Edit metadata_agent.ini...
-    
+
     vi /etc/neutron/metadata_agent.ini
 
 With:
@@ -725,7 +726,7 @@ First, get the admin tenant id and note it (like var $ADMIN_TENTANT_ID).
     keystone tenant-list
 
 Mapping the physical network, that one from your "border gateway", into OpenStack Neutron:
- 
+
     neutron net-create --tenant-id $ADMIN_TENTANT_ID sharednet1 --shared --provider:network_type flat --provider:physical_network physnet1
 
 Create an IPv4 subnet on "sharednet1":
@@ -794,7 +795,7 @@ Edit Dashboard config file:
 With:
 
     OPENSTACK_HOST = "controller.yourdomain.com"
-    
+
 Run:
 
     service apache2 restart ; service memcached restart
@@ -809,7 +810,7 @@ Done! You can try to access the Dashboard to test admin login...
 
 # 8. Deploying your first Compute Node
 
-This OpenStack Compute Node is powered by Ubuntu 14.04.1!
+This OpenStack Compute Node is powered by Ubuntu 14.04.2!
 
 * Requirements:1 Physical Server with Virtualization support on CPU, 1 ethernet
 
@@ -829,7 +830,7 @@ This OpenStack Compute Node is powered by Ubuntu 14.04.1!
     * IP address: 10.0.0.31/24
     * Gateway IP: 10.0.0.1
 
-## 8.1. Install Ubuntu 14.04.1
+## 8.1. Install Ubuntu 14.04.2
 
 This installation can be the "Minimum Installation" flavor, using `Manual Paritioning', make the following partitions:
 
@@ -842,7 +843,9 @@ Login as root and run:
     echo compute-1 > /etc/hostname
 
     apt-get update
-    
+
+    sudo add-apt-repository cloud-archive:juno
+
     apt-get dist-upgrade -y
 
     # If your kernel gets upgraded, do a reboot before running the next command:
@@ -872,7 +875,7 @@ Run:
     sed -i 's/^#listen_tls = 0/listen_tls = 0/' /etc/libvirt/libvirtd.conf
 
     sed -i 's/^#listen_tcp = 1/listen_tcp = 1/' /etc/libvirt/libvirtd.conf
-    
+
     sed -i 's/^#auth_tcp = "sasl"/auth_tcp = "none"/' /etc/libvirt/libvirtd.conf
 
     # Prepare /etc/init/libvirt-bin.conf:
@@ -929,7 +932,7 @@ With:
         dns-search yourdomain.com
         # Google Public DNS
         dns-nameservers 2001:4860:4860::8844 2001:4860:4860::8888
-        # OpenNIC 
+        # OpenNIC
     #    dns-nameservers 2001:530::216:3cff:fe8d:e704 2600:3c00::f03c:91ff:fe96:a6ad 2600:3c00::f03c:91ff:fe96:a6ad
         # OpenDNS Public Name Servers:
     #    dns-nameservers 2620:0:ccc::2 2620:0:ccd::2
@@ -992,7 +995,7 @@ With:
     # verbose = True
     allow_overlapping_ips = True
     rabbit_host = controller.yourdomain.com
-    
+
     notify_nova_on_port_status_changes = True
     notify_nova_on_port_data_changes = True
     nova_url = http://controller.yourdomain.com:8774/v2
@@ -1025,10 +1028,10 @@ With:
     type_drivers = local,flat
 
     mechanism_drivers = openvswitch,l2population
-    
+
     [ml2_type_flat]
     flat_networks = *
-    
+
     [securitygroup]
     enable_security_group = True
     firewall_driver = neutron.agent.linux.iptables_firewall.OVSHybridIptablesFirewallDriver
@@ -1056,9 +1059,9 @@ Show the O.S. images to get the IDs:
 
     glance image-list
 
-Boot your Ubuntu 14.04.1 - 32-bit fits better on m1.micro:
+Boot your Ubuntu 14.04.2 - 32-bit fits better on m1.micro:
 
-    nova boot --image $your_ubuntu_14_04_1_lts_image_id --key-name my_ssh_key --flavor 1 ubuntu-1
+    nova boot --image $your_ubuntu_14.04.2_lts_image_id --key-name my_ssh_key --flavor 1 ubuntu-1
 
 The above command will create your Instance but, the IPv6 address will not be configured automatically within it, so, do the following steps to enable it:
 
@@ -1079,7 +1082,7 @@ Go there and configure the IPv6 statically:
     ssh ubuntu@10.0.0.130
     sudo ip -6 a a 2001:db8:1::8000/64 dev eth0
     sudo ip -6 r a default via 2001:db8:1::1
-    
+
 Verify IPv6 connectivity:
 
     ubuntu@ubuntu-1:~$ ping6 -c1 google.com
