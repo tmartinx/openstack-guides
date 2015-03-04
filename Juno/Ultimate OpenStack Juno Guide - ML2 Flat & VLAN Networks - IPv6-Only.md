@@ -870,8 +870,8 @@ Remove pre-configured libvirt default network:
 
 Run:
 
-    # Add vhost_net module to be enabled during server boot:
-    echo vhost_net >> /etc/modules
+    # Enable vhost_net module:
+    sed -i 's/^VHOST_NET_ENABLED=0/VHOST_NET_ENABLED=1/' /etc/default/qemu-kvm
 
     # Prepare /etc/libvirt/libvirtd.conf:
     sed -i 's/^#listen_tls = 0/listen_tls = 0/' /etc/libvirt/libvirtd.conf
