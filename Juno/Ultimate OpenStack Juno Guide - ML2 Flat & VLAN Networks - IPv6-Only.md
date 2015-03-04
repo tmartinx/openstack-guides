@@ -262,7 +262,7 @@ Run:
 
     apt-get install ubuntu-cloud-keyring python-software-properties
 
-    sudo add-apt-repository cloud-archive:juno
+    add-apt-repository cloud-archive:juno
 
     apt-get dist-upgrade -y
 
@@ -844,7 +844,7 @@ Login as root and run:
 
     apt-get update
 
-    sudo add-apt-repository cloud-archive:juno
+    add-apt-repository cloud-archive:juno
 
     apt-get dist-upgrade -y
 
