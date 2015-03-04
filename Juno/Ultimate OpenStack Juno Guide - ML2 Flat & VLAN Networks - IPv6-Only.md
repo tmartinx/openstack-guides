@@ -260,7 +260,7 @@ Run:
 
     apt-get update
 
-    apt-get install ubuntu-cloud-keyring python-software-properties
+    apt-get install ubuntu-cloud-keyring software-properties-common
 
     add-apt-repository cloud-archive:juno
 
@@ -843,6 +843,8 @@ Login as root and run:
     echo compute-1 > /etc/hostname
 
     apt-get update
+
+    apt-get install ubuntu-cloud-keyring software-properties-common
 
     add-apt-repository cloud-archive:juno
 
