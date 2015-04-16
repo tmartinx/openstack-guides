@@ -59,9 +59,9 @@ while getopts "u:D:p:m:K:R:E:T:vh" opt; do
     h)
       cat <<EOF
 Usage: $0 [-m mysql_hostname] [-u mysql_username] [-D mysql_database] [-p mysql_password]
-       [-K keystone_master ] [ -R keystone_region ] [ -E keystone_endpoint_url ] 
+       [-K keystone_master ] [ -R keystone_region ] [ -E keystone_endpoint_url ]
        [ -T keystone_token ]
-          
+
 Add -v for verbose mode, -h to display this message.
 EOF
       exit 0
@@ -75,7 +75,7 @@ EOF
       exit 1
       ;;
   esac
-done  
+done
 
 if [ -z "$KEYSTONE_REGION" ]; then
   echo "Keystone region not set. Please set with -R option or set KEYSTONE_REGION variable." >&2
@@ -100,9 +100,10 @@ fi
 if [ -n "$missing_args" ]; then
   exit 1
 fi
- 
+
 keystone service-create --name nova --type compute --description 'OpenStack Compute Service'
-keystone service-create --name cinder --type volume --description 'OpenStack Volume Service'
+keystone service-create --name cinder --type volume --description 'OpenStack Block Storage'
+keystone service-create --name cinderv2 --type volumev2 --description "OpenStack Block Storage"
 keystone service-create --name glance --type image --description 'OpenStack Image Service'
 keystone service-create --name keystone --type identity --description 'OpenStack Identity Service'
 keystone service-create --name ec2 --type ec2 --description 'OpenStack EC2 Service'
@@ -119,6 +120,9 @@ create_endpoint () {
     ;;
     volume)
     keystone endpoint-create --region $KEYSTONE_REGION --service-id $2 --publicurl 'http://'"$EXT_HOST_IP"':8776/v1/$(tenant_id)s' --adminurl 'http://'"$HOST_IP"':8776/v1/$(tenant_id)s' --internalurl 'http://'"$HOST_IP"':8776/v1/$(tenant_id)s'
+    ;;
+    volumev2)
+    keystone endpoint-create --region $KEYSTONE_REGION --service-id $2 --publicurl 'http://'"$EXT_HOST_IP"':8776/v2/$(tenant_id)s' --adminurl 'http://'"$HOST_IP"':8776/v2/$(tenant_id)s' --internalurl 'http://'"$HOST_IP"':8776/v2/$(tenant_id)s'
     ;;
     image)
     keystone endpoint-create --region $KEYSTONE_REGION --service-id $2 --publicurl 'http://'"$EXT_HOST_IP"':9292' --adminurl 'http://'"$HOST_IP"':9292' --internalurl 'http://'"$HOST_IP"':9292'
