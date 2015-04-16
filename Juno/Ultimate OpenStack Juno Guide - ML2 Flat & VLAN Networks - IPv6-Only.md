@@ -118,11 +118,11 @@ If you think that this guide is great! Please, consider a (micro)-Bitcoin (Litec
 
 # 1. First things first, the upstream router
 
-This lab have an Ubuntu acting as a "Provider Networking - Upstream SLAAC Router", withit have two ethernet cards, with our WAN ISP attached to eth0, and behind it (eth1), will sit the entire OpenStack infrastructure (i.e. "The Cloud", controllers, network and compute nodes, instances and regular servers).
+This lab have an Ubuntu acting as an "Upstream Router" with SLAAC enabled, it have two ethernet cards, with a "WAN / ISP / uplink" attached to its `eth0`, and "behind it", its `eth1`, will sit your entire OpenStack's infrastructure (i.e. `The Cloud`, `Controllers`, `Network` and `Compute Nodes`. And also, the `Instances` and `Regular Servers` or some `KVM Hypervisors` that you might have).
 
-This **Firewall Ubuntu** might have the package **aiccu** installed, so, you'll have at least, one IPv6 /64 block to play with (if you don't have it native from your ISP already, get one from SixxS.net and start using it with **aiccu**).
+This **Firewall Ubuntu** might have the package **aiccu** installed, so, you'll have at least, one IPv6 /64 block to play with (if you don't have it native from your ISP already, get one from **SixxS.net** and start using it with **aiccu**).
 
-Also, if you go with IPv6, you'll need the package **radvd** installed here, so, you'll be able to advertise your IPv6 blocks within your (V)LAN, including your Project's Instances Network. And, for the Ubuntu IPv6 clients (including IPv6-Only Instances), you'll also need the package **rdnssd** to auto-configure Instance's /etc/resolv.conf file according (it will receive the *DNS Nameservers* from **radvd**).
+You'll need the package **radvd** installed, so, you'll be able to advertise your IPv6 block(s) within your (V)LAN, including each of your `Project's Instances Network`. And, for your Ubuntu IPv6 clients (including IPv6-Only `Instances`), you'll also need the package **rdnssd** to auto-configure Instance's /etc/resolv.conf file according (it will receive the *DNS Nameservers* from **radvd** on this case).
 
 ## 1.1. Gateway (Ubuntu 14.04.2)
 
@@ -168,7 +168,7 @@ Run the following commands
 
 ## 1.4. Upstream IPv6 Router Advertisement (SLAAC)
 
-OpenStack Juno is now compatible with an upstream SLAAC router.
+OpenStack Juno is now compatible with an *upstream router* running radvd.
 
 Get it here (example):
 
@@ -180,9 +180,13 @@ Install the following package (RA Daemon):
 
 Now both your LAN and your Cloud, have IPv6! Have fun!
 
-NOTE: You'll might want to disable IPv6 Privace Extensions.
+*NOTE: You'll might want to disable IPv6 Privace Extensions.*
 
 ## 1.5. NAT rule (Legacy)
+
+You'll probably need to enable at least, one NAT rule on this environment, so your IPv4 subnet can reach the Internet.
+
+Just run this (better to put it on /etc/rc.local or within /etc/network/interfaces):
 
     iptables -t nat -A POSTROUTING -o eth0 -j MASQUERADE
 
@@ -251,18 +255,17 @@ The next OVS command will kick you out from this server (if you're connected to 
 
     ovs-vsctl add-port br-eth0 eth0 && reboot
 
+...Otherwise, if you're locally connected at the controller (ttyX), then, you don't need to reboot, just `sudo service networking restart` (I guess). If unsure, then, reboot.
+
 ## 2.3. Install OpenStack "base" dependecies
 
-On next steps, you'll also add OpenStack Juno Cloud Archive repository.
-
 Run:
-
-
-    apt-get update
 
     apt-get install ubuntu-cloud-keyring software-properties-common
 
     add-apt-repository cloud-archive:juno
+
+    apt-get update
 
     apt-get dist-upgrade -y
 
@@ -456,9 +459,9 @@ Run the following commands to add some O.S. images into your Glance repository.
 
 ### 3.3.4. Ubuntu 14.04.2 - LTS:
 
-    glance image-create --location http://uec-images.ubuntu.com/releases/14.04/release/ubuntu-14.04-server-cloudimg-i386-disk1.img --is-public true --disk-format qcow2 --container-format bare --name "Ubuntu 14.04.2 LTS - Trusty Tahr - 32-bit - Cloud Based Image"
+    glance image-create --location http://uec-images.ubuntu.com/releases/14.04.2/release/ubuntu-14.04-server-cloudimg-i386-disk1.img --is-public true --disk-format qcow2 --container-format bare --name "Ubuntu 14.04.2 LTS - Trusty Tahr - 32-bit - Cloud Based Image"
 
-    glance image-create --location http://uec-images.ubuntu.com/releases/14.04/release/ubuntu-14.04-server-cloudimg-amd64-disk1.img --is-public true --disk-format qcow2 --container-format bare --name "Ubuntu 14.04.2 LTS - Trusty Tahr - 64-bit - Cloud Based Image"
+    glance image-create --location http://uec-images.ubuntu.com/releases/14.04.2/release/ubuntu-14.04-server-cloudimg-amd64-disk1.img --is-public true --disk-format qcow2 --container-format bare --name "Ubuntu 14.04.2 LTS - Trusty Tahr - 64-bit - Cloud Based Image"
 
 ### 3.3.5. Ubuntu 14.10:
 
@@ -711,13 +714,13 @@ Run:
 
 For the sake of simplicity, both management and instances networks, share the same IPv6 and IPv4 subnet. They are Dual-Stacked but, IPv4 is entirely optional, if you have IPv6.
 
-When with IPv6, the life is easier, just enable SLAAC in your Network. Then, both Nodes (Management Network) and Instances will generate its own IPv6 address automatically, you'll want DNS here, or at least, a well configured `/etc/hosts` files. Plus, you might want to disable `IPv6 Privacy Extensions` within your Instances, since OpenStack Neutron does not have support for it.
+When with IPv6, the life is easier, just enable `SLAAC` in your Network. Then, both Nodes (Management Network) and Instances will generate its own IPv6 address automatically, you'll want DNS here, or at least, a well configured `/etc/hosts` files. Plus, you might want to disable `IPv6 Privacy Extensions` within your Instances, since OpenStack Neutron does not have support for it.
 
-When with IPv4, the subnet 10.0.0.0/24 is subdivided into two, not by subnet mask, but instead, by using the Neutron option "--allocation-pool". So, from 10.0.0.1 to 10.0.0.128, resides the some `KVM Hypervisors` (`ubuntu-virt`) running things like the Gateway, Controler and Network nodes, also the Compute Nodes are others `KVM Hypervisors` running `nova-compute` and `Neutron OVS Agent`. And for your Instances, from 10.0.0.129 to 10.0.0.254.
+When with IPv4, the subnet `10.0.0.0/24` is subdivided into two, not by subnet mask, but instead, by using the Neutron option "--allocation-pool". So, from `10.0.0.1` to `10.0.0.128`, resides the some `KVM Hypervisors` (`ubuntu-virt`) running things like the Gateway, Controler and Network nodes, also the Compute Nodes are others `KVM Hypervisors` running `nova-compute` and `Neutron OVS Agent`. And for your `Instances`, from `10.0.0.129` to `10.0.0.254`.
 
 So, it is simpler, you just need one `Single Flat Network`, `Dual-Stacked`, IPv4 with DHCPv4 and IPv6 with SLAAC, for your entire Cloud Computing.
 
-Also, since we aren't using Neutron acting as a L3 Router, we don't need to deal with any extra IPv6/4 subnets. Remember, just 1 IPv6 (or IPv4) subnet is enough to start using OpenStack, very minimalist and stable. Then you can start playing with `VLAN Provider Networks` and later, with topologies like `Per-Tenant Router with Private Networks`, just like the docs.openstack.org/juno presents.
+Also, since we aren't using Neutron acting as a L3 Router, we don't need to deal with any extra IPv6/4 subnets. Remember, just one IPv6 (or IPv4) subnet is enough to start using OpenStack, very minimalist and stable. Then you can start playing with `VLAN Provider Networks` and later, with topologies like `Per-Tenant Router with Private Networks`, just like the `docs.openstack.org/juno` presents.
 
 ### 5.2.1. Creating the Flat Neutron Network
 
@@ -725,7 +728,7 @@ First, get the admin tenant id and note it (like var $ADMIN_TENTANT_ID).
 
     keystone tenant-list
 
-Mapping the physical network, that one from your "border gateway", into OpenStack Neutron:
+Mapping the physical network, that one from your "upstream router", into OpenStack Neutron:
 
     neutron net-create --tenant-id $ADMIN_TENTANT_ID sharednet1 --shared --provider:network_type flat --provider:physical_network physnet1
 
@@ -735,7 +738,7 @@ Create an IPv4 subnet on "sharednet1":
 
 Create an IPv6 subnet on "sharednet1":
 
-    neutron subnet-create --ip-version 6 --ipv6_address_mode=slaac --tenant-id a4f6f6785e384d00b6744bed8a31c051 sharednet1 2001:db8:1::/64
+    neutron subnet-create --ip-version 6 --ipv6_address_mode=slaac --tenant-id $ADMIN_TENANT_ID sharednet1 2001:db8:1::/64
 
 ### Documentation Reference
 
@@ -747,7 +750,7 @@ Create an IPv6 subnet on "sharednet1":
 
     apt-get install cinder-api cinder-scheduler python-mysqldb
 
-    wget https://raw.githubusercontent.com/tmartinx/openstack-guides/master/Juno/controller/etc/cinder/cinder.conf
+    curl -s https://raw.githubusercontent.com/tmartinx/openstack-guides/master/Juno/controller/etc/cinder/cinder.conf > /etc/cinder/cinder.conf
 
 Run:
 
@@ -772,7 +775,7 @@ Then start it again and run:
     # Create the LVM Volume Group
     vgcreate cinder-volumes /dev/vdb1
 
-Install Cinder Volume:
+Install Cinder Volume (optional):
 
     apt-get install cinder-volume
 
@@ -847,6 +850,8 @@ Login as root and run:
     apt-get install ubuntu-cloud-keyring software-properties-common
 
     add-apt-repository cloud-archive:juno
+
+    apt-get update
 
     apt-get dist-upgrade -y
 
