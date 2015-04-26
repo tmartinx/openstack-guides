@@ -1,0 +1,23 @@
+# COMMON OPENSTACK ENVS
+export SERVICE_TOKEN=ADMIN
+export OS_USERNAME=admin
+export OS_PASSWORD=admin_pass
+export OS_TENANT_NAME=admin
+export OS_AUTH_URL="http://controller.yourdomain.com:5000/v2.0/"
+export SERVICE_ENDPOINT="http://controller.yourdomain.com:35357/v2.0/"
+export OS_AUTH_STRATEGY=keystone
+export OS_NO_CACHE=1
+
+# LEGACY NOVA ENVS
+export NOVA_USERNAME=${OS_USERNAME}
+export NOVA_PROJECT_ID=${OS_TENANT_NAME}
+export NOVA_PASSWORD=${OS_PASSWORD}
+export NOVA_API_KEY=${OS_PASSWORD}
+export NOVA_URL=${OS_AUTH_URL}
+export NOVA_VERSION=1.1
+export NOVA_REGION_NAME=RegionOne
+
+# EUCA2OOLs ENV VARIABLES
+export EC2_ACCESS_KEY=ab2f155901fb4be5bae4ddc78c924665
+export EC2_SECRET_KEY=ef89b9562e9b4653a8d68e3117f0ae32
+export EC2_URL=http://controller.yourdomain.com:8773/services/Cloud
