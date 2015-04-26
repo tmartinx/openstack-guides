@@ -1,16 +1,16 @@
-# Ultimate OpenStack Juno Guide
+﻿# Ultimate OpenStack Juno Guide
 
 This is a Quick Guide to deploy OpenStack Juno on top of Ubuntu 14.04.2, it is IPv6-Only (almost)! But, it can be used to deploy a IPv4-Only environment, just replace the IPs with `sed`.
 
-It is compliant with OpenStack's official documentation (docs.openstack.org/juno).
+It is compliant with OpenStack's official documentation (http://docs.openstack.org/juno).
 
-The Project's (old "Tenant" terminology) subnets are based on Neutron, with ML2 plugin and `Single Flat Network` topology, Dual-Stacked, while of course, IPv4 is optional. The topology `VLAN Provider Networks` are also supported on this guide, it is very similar with `Single Flat Network`.
+The Project's (old "Tenant" terminology) subnets are based on Neutron, with ML2 plugin and `Single Flat Network` topology, Dual-Stacked, IPv4 is optional. The topology `VLAN Provider Networks` are also supported on this guide, it is very similar with `Single Flat Network`.
 
 The `Single Flat Network` is the simplest network topology supported by OpenStack. So, it is easier to understand and follow. Then, you can start using `VLAN Provider Networks`, which is basically something like a "Multi-(Single Flat Network)", where each "Flat LAN" resides on its own VLAN tag.
 
 Finally, the IPv6 support on `Neutron L3 Router` is ready! With ML2 plugin, you can have a Dual-Stacked environment on top of a `Single Flat Network / VLAN Provider Networks` without using `Neutron L3 Router` at all (i.e. by using upstream routers).
 
-Apparently, only Metadata and the "GRE / VXLAN subnet" still requires IPv4. This is why this guide is "almost IPv6-Only". If you don't need Metadata Services, you don't need IPv4 either.
+Apparently, only Metadata and the "GRE / VXLAN subnet" still requires IPv4. This is why this guide is "almost IPv6-Only". If you don't need Metadata Services, or if you only use "Config Drive", you don't need IPv4 as well.
 
 This is a "step-by-step", a "cut-and-paste" guide.
 
@@ -27,11 +27,13 @@ This is a "step-by-step", a "cut-and-paste" guide.
 * SPICE Consoles - VDI (Virtual Desktop Infrastructure);
 * Neutron with ML2 `Single Flat Network` & `VLAN Provider Networks`, Metadata and Security Groups;
 * Cinder;
+* Heat;
 * and Dashboard.
 
 **This Guide does not covers:**
 
-* L3 Routers;
+* Neutron L3 Routers;
+* Linux Bridges;
 * NAT;
 * Floating IPs;
 * GRE or VXLAN tunnels.
@@ -178,7 +180,7 @@ Install the following package (RA Daemon):
 
     sudo apt-get install radvd
 
-Now both your LAN and your Cloud, have IPv6! Have fun!
+Now both of your LAN and your Cloud, have IPv6! Have fun!
 
 *NOTE: You'll might want to disable IPv6 Privace Extensions.*
 
@@ -271,7 +273,6 @@ Run:
 
     apt-get install openssl curl ntp mysql-server python-mysqldb rabbitmq-server python-keyring
 
-
 Configure it:
 
 Replace `guest` password (syntax is: user / pass, guest / guest).
@@ -282,7 +283,7 @@ Replace `guest` password (syntax is: user / pass, guest / guest).
 
 Reconfigure MySQL by downloading a new `my.cnf`:
 
-    curl -s https://raw.githubusercontent.com/tmartinx/openstack-guides/master/Juno/controller/etc/mysql/my.cnf > /etc/mysql/my.cnf
+    curl -s https://raw.githubusercontent.com/tmartinx/openstack-guides/master/Juno/flat+vlan/controller/etc/mysql/my.cnf > /etc/mysql/my.cnf
 
 Restart MySQL:
 
@@ -298,10 +299,11 @@ Pay attention on next step, it will remove all your OpenStack Databases ("factor
 
 Create/reset the required databases:
 
-    curl -s https://raw.githubusercontent.com/tmartinx/openstack-guides/master/Juno/controller/root/mysql-dbs.sql | mysql -u root -p
+    curl -s https://raw.githubusercontent.com/tmartinx/openstack-guides/master/Juno/flat+vlan/controller/root/mysql-dbs.sql | mysql -u root -p
 
 ### Documentation reference
 
+ * http://docs.openstack.org/juno/install-guide/install/apt/content/ch_basic_environment.html#basics-packages
  * http://docs.openstack.org/juno/install-guide/install/apt/content/ch_basic_environment.html#basics-messaging-server
  * http://docs.openstack.org/juno/install-guide/install/apt/content/ch_basic_environment.html#basics-database
 
@@ -311,7 +313,7 @@ Create/reset the required databases:
 
 Download a new `keystone.conf` (it is based on Juno Ubuntu packages, plus a few changes):
 
-    curl -s https://raw.githubusercontent.com/tmartinx/openstack-guides/master/Juno/controller/etc/keystone/keystone.conf > /etc/keystone/keystone.conf
+    curl -s https://raw.githubusercontent.com/tmartinx/openstack-guides/master/Juno/flat+vlan/controller/etc/keystone/keystone.conf > /etc/keystone/keystone.conf
 
 Then run:
 
@@ -325,9 +327,9 @@ More Keystone stuff:
 
     cd ~
 
-    wget https://raw.githubusercontent.com/tmartinx/openstack-guides/master/Juno/controller/root/keystone_basic.sh
+    wget https://raw.githubusercontent.com/tmartinx/openstack-guides/master/Juno/flat+vlan/controller/root/keystone_basic.sh
 
-    wget https://raw.githubusercontent.com/tmartinx/openstack-guides/master/Juno/controller/root/keystone_endpoints_basic.sh
+    wget https://raw.githubusercontent.com/tmartinx/openstack-guides/master/Juno/flat+vlan/controller/root/keystone_endpoints_basic.sh
 
     chmod +x keystone_basic.sh
 
@@ -351,7 +353,7 @@ Download the `NOVA Resource Configuration` file of your `admin` user:
 
     cd ~
 
-    wget https://raw.githubusercontent.com/tmartinx/openstack-guides/master/Juno/controller/root/.novarc
+    wget https://raw.githubusercontent.com/tmartinx/openstack-guides/master/Juno/flat+vlan/controller/root/.novarc
 
 Append to your bashrc:
 
@@ -469,17 +471,17 @@ Run the following commands to add some O.S. images into your Glance repository.
 
     glance image-create --location http://uec-images.ubuntu.com/releases/14.10/release/ubuntu-14.10-server-cloudimg-amd64-disk1.img --is-public true --disk-format qcow2 --container-format bare --name "Ubuntu 14.10 - Utopic Unicorn - 64-bit - Cloud Based Image"
 
-### 3.3.5. CoreOS 493.0.0
+### 3.3.5. CoreOS
 
-Info: https://coreos.com
+Info: https://coreos.com/docs/running-coreos/platforms/openstack/
 
     cd ~
 
-    wget http://alpha.release.core-os.net/amd64-usr/current/coreos_production_openstack_image.img.bz2
+    wget http://stable.release.core-os.net/amd64-usr/current/coreos_production_openstack_image.img.bz2
 
     bunzip2 coreos_production_openstack_image.img.bz2
 
-    glance image-create --name "CoreOS 493.0.0 - Linux 3.17.2 - Docker 1.3.1 - etcd 0.4.6 - fleet 0.8.1" --container-format ovf --disk-format qcow2 --file coreos_production_openstack_image.img --is-public True
+    glance image-create --name "CoreOS" --container-format ovf --disk-format qcow2 --file coreos_production_openstack_image.img --is-public True
 
 ### 3.3.6. Windows 2012 R2:
 
@@ -750,7 +752,7 @@ Create an IPv6 subnet on "sharednet1":
 
     apt-get install cinder-api cinder-scheduler python-mysqldb
 
-    curl -s https://raw.githubusercontent.com/tmartinx/openstack-guides/master/Juno/controller/etc/cinder/cinder.conf > /etc/cinder/cinder.conf
+    curl -s https://raw.githubusercontent.com/tmartinx/openstack-guides/master/Juno/flat+vlan/controller/etc/cinder/cinder.conf > /etc/cinder/cinder.conf
 
 Run:
 
@@ -787,7 +789,7 @@ Install Cinder Volume (optional):
 
 Run:
 
-    apt-get install openstack-dashboard memcached
+    apt-get install openstack-dashboard
 
     apt-get purge openstack-dashboard-ubuntu-theme
 
@@ -1130,8 +1132,7 @@ You have your own Private Cloud Computing Environment up and running! With IPv6!
 
 # 10. TODO List
 
-* Ubuntu Flex container
-* Heat
+* Ubuntu Flex container (LXD)
 * Ceilometer
 * Trove
 * Host Aggregates

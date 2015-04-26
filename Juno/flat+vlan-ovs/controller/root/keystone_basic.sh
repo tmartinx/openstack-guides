@@ -1,6 +1,6 @@
 #!/bin/sh
 #
-# Keystone basic configuration 
+# Keystone basic configuration
 #
 # Mainly inspired by https://github.com/openstack/keystone/blob/master/tools/sample_data.sh
 #
@@ -11,6 +11,14 @@
 # Support: openstack@lists.launchpad.net
 # License: Apache Software License (ASL) 2.0
 #
+# Documentation Reference:
+#
+# http://docs.openstack.org/juno/install-guide/install/apt/content/keystone-users.html
+# http://docs.openstack.org/juno/install-guide/install/apt/content/glance-install.html
+# http://docs.openstack.org/juno/install-guide/install/apt/content/ch_nova.html
+# http://docs.openstack.org/juno/install-guide/install/apt/content/neutron-controller-node.html
+# http://docs.openstack.org/juno/install-guide/install/apt/content/cinder-install-controller-node.html
+# http://docs.openstack.org/juno/install-guide/install/apt/content/heat-install-controller-node.html
 
 # Host IP address, hostname or FQDN - Can resolve to a IPv6 address too
 HOST_IP=controller.yourdomain.com
@@ -26,8 +34,8 @@ get_id () {
 }
 
 # Tenants
-ADMIN_TENANT=$(get_id keystone tenant-create --name=admin)
-SERVICE_TENANT=$(get_id keystone tenant-create --name=$SERVICE_TENANT_NAME)
+ADMIN_TENANT=$(get_id keystone tenant-create --name=admin --description "Admin Tenant")
+SERVICE_TENANT=$(get_id keystone tenant-create --name=$SERVICE_TENANT_NAME --description "Service Tenant")
 
 
 # Users

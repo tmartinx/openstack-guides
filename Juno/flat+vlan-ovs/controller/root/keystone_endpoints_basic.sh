@@ -11,6 +11,14 @@
 # Support: openstack@lists.launchpad.net
 # License: Apache Software License (ASL) 2.0
 #
+# Documentation Reference:
+#
+# http://docs.openstack.org/juno/install-guide/install/apt/content/keystone-services.html
+# http://docs.openstack.org/juno/install-guide/install/apt/content/glance-install.html
+# http://docs.openstack.org/juno/install-guide/install/apt/content/ch_nova.html
+# http://docs.openstack.org/juno/install-guide/install/apt/content/neutron-controller-node.html
+# http://docs.openstack.org/juno/install-guide/install/apt/content/cinder-install-controller-node.html
+# http://docs.openstack.org/juno/install-guide/install/apt/content/heat-install-controller-node.html
 
 # Host IP address, hostname or FQDN - Can resolve to a IPv6 address too
 HOST_IP=controller.yourdomain.com
@@ -101,17 +109,17 @@ if [ -n "$missing_args" ]; then
   exit 1
 fi
 
-keystone service-create --name nova --type compute --description 'OpenStack Compute Service'
+keystone service-create --name keystone --type identity --description 'OpenStack Identity'
+keystone service-create --name glance --type image --description 'OpenStack Image Service'
+keystone service-create --name nova --type compute --description 'OpenStack Compute'
 keystone service-create --name cinder --type volume --description 'OpenStack Block Storage'
 keystone service-create --name cinderv2 --type volumev2 --description "OpenStack Block Storage"
-keystone service-create --name glance --type image --description 'OpenStack Image Service'
-keystone service-create --name keystone --type identity --description 'OpenStack Identity Service'
-keystone service-create --name ec2 --type ec2 --description 'OpenStack EC2 Service'
 keystone service-create --name neutron --type network --description 'OpenStack Networking Service'
-keystone service-create --name swift --type object-store --description='OpenStack Storage Service'
-keystone service-create --name ceilometer --type metering --description='OpenStack Metering Service'
 keystone service-create --name heat --type orchestration --description 'Heat Orchestration API'
 keystone service-create --name heat-cfn --type cloudformation --description 'Heat CloudFormation API'
+keystone service-create --name ceilometer --type metering --description='OpenStack Metering Service'
+keystone service-create --name ec2 --type ec2 --description 'OpenStack EC2 Service'
+keystone service-create --name swift --type object-store --description='OpenStack Storage Service'
 
 create_endpoint () {
   case $1 in
@@ -150,7 +158,7 @@ create_endpoint () {
   esac
 }
 
-for i in compute volume image object-store identity ec2 network object-store metering orchestration cloudformation; do
+for i in compute volume volumev2 image object-store identity ec2 network object-store metering orchestration cloudformation; do
   id=`mysql -h "$MYSQL_HOST" -u "$MYSQL_USER" -p"$MYSQL_PASSWORD" "$MYSQL_DATABASE" -ss -e "SELECT id FROM service WHERE type='"$i"';"` || exit 1
   create_endpoint $i $id
 done
