@@ -21,7 +21,7 @@
 # http://docs.openstack.org/juno/install-guide/install/apt/content/heat-install-controller-node.html
 
 # Host IP address, hostname or FQDN - Can resolve to an IPv6 address too
-HOST_ADDR=controller-1.tcmc.com.br
+HOST_ADDR=controller.yourdomain.com
 
 ADMIN_PASSWORD=${ADMIN_PASSWORD:-admin_pass}
 SERVICE_PASSWORD=${SERVICE_PASSWORD:-service_pass}
@@ -53,9 +53,9 @@ HEAT_STACK_USER_ROLE=$(get_id keystone role-create --name heat_stack_user)
 MEMBER_ROLE=$(get_id keystone role-create --name _member_)
 
 # Users
-ADMIN_USER=$(get_id keystone user-create --name admin --pass "$ADMIN_PASSWORD" --email admin@tcmc.com.br)
-DEMO_USER=$(get_id keystone user-create --name demo --pass "$DEMO_PASSWORD" --email demo@tcmc.com.br)
-#DEMO_USER=$(get_id keystone user-create --name demo --tenant demo --pass "$DEMO_PASSWORD" --email demo@tcmc.com.br)
+ADMIN_USER=$(get_id keystone user-create --name admin --pass "$ADMIN_PASSWORD" --email admin@yourdomain.com)
+DEMO_USER=$(get_id keystone user-create --name demo --pass "$DEMO_PASSWORD" --email demo@yourdomain.com)
+#DEMO_USER=$(get_id keystone user-create --name demo --tenant demo --pass "$DEMO_PASSWORD" --email demo@yourdomain.com)
 
 # Add Roles to Users in Tenants
 keystone user-role-add --user $ADMIN_USER --role $ADMIN_ROLE --tenant $ADMIN_TENANT
@@ -64,28 +64,28 @@ keystone user-role-add --user $ADMIN_USER --role $KEYSTONESERVICE_ROLE --tenant 
 keystone user-role-add --user $DEMO_USER --role $HEAT_STACK_OWNER_ROLE --tenant $DEMO_TENANT
 
 # Configure service users/roles
-GLANCE_USER=$(get_id keystone user-create --name glance --pass "$SERVICE_PASSWORD" --email glance@tcmc.com.br)
+GLANCE_USER=$(get_id keystone user-create --name glance --pass "$SERVICE_PASSWORD" --email glance@yourdomain.com)
 keystone user-role-add --user $GLANCE_USER --tenant $SERVICE_TENANT --role $ADMIN_ROLE
 
-NOVA_USER=$(get_id keystone user-create --name nova --pass "$SERVICE_PASSWORD" --email nova@tcmc.com.br)
+NOVA_USER=$(get_id keystone user-create --name nova --pass "$SERVICE_PASSWORD" --email nova@yourdomain.com)
 keystone user-role-add --user $NOVA_USER --tenant $SERVICE_TENANT --role $ADMIN_ROLE
 
-NEUTRON_USER=$(get_id keystone user-create --name neutron --pass "$SERVICE_PASSWORD" --email neutron@tcmc.com.br)
+NEUTRON_USER=$(get_id keystone user-create --name neutron --pass "$SERVICE_PASSWORD" --email neutron@yourdomain.com)
 keystone user-role-add --user $NEUTRON_USER --tenant $SERVICE_TENANT --role $ADMIN_ROLE
 
-CINDER_USER=$(get_id keystone user-create --name cinder --pass "$SERVICE_PASSWORD" --email cinder@tcmc.com.br)
+CINDER_USER=$(get_id keystone user-create --name cinder --pass "$SERVICE_PASSWORD" --email cinder@yourdomain.com)
 keystone user-role-add --user $CINDER_USER --tenant $SERVICE_TENANT --role $ADMIN_ROLE
 
-SWIFT_USER=$(get_id keystone user-create --name swift --pass "$SERVICE_PASSWORD" --email swift@tcmc.com.br)
+SWIFT_USER=$(get_id keystone user-create --name swift --pass "$SERVICE_PASSWORD" --email swift@yourdomain.com)
 keystone user-role-add --user $SWIFT_USER --tenant $SERVICE_TENANT --role $ADMIN_ROLE
 
-HEAT_USER=$(get_id keystone user-create --name heat --pass "$SERVICE_PASSWORD" --email heat@tcmc.com.br)
+HEAT_USER=$(get_id keystone user-create --name heat --pass "$SERVICE_PASSWORD" --email heat@yourdomain.com)
 keystone user-role-add --user $HEAT_USER --tenant $SERVICE_TENANT --role $ADMIN_ROLE
 
-CEILOMETER_USER=$(get_id keystone user-create --name ceilometer --pass "$SERVICE_PASSWORD" --email ceilometer@tcmc.com.br)
+CEILOMETER_USER=$(get_id keystone user-create --name ceilometer --pass "$SERVICE_PASSWORD" --email ceilometer@yourdomain.com)
 keystone user-role-add --user $CEILOMETER_USER --tenant $SERVICE_TENANT --role $ADMIN_ROLE
 
-TROVE_USER=$(get_id keystone user-create --name trove --pass "$SERVICE_PASSWORD" --email trove@tcmc.com.br)
+TROVE_USER=$(get_id keystone user-create --name trove --pass "$SERVICE_PASSWORD" --email trove@yourdomain.com)
 keystone user-role-add --user $TROVE_USER --tenant $SERVICE_TENANT --role $ADMIN_ROLE
 
 # Ceilometer needs ResellerAdmin role to access swift account stats

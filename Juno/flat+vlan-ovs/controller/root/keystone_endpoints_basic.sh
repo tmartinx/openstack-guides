@@ -115,10 +115,10 @@ keystone service-create --name nova --type compute --description "OpenStack Comp
 keystone service-create --name neutron --type network --description "OpenStack Networking"
 keystone service-create --name cinder --type volume --description "OpenStack Block Storage"
 keystone service-create --name cinderv2 --type volumev2 --description "OpenStack Block Storage"
-keystone service-create --name swift --type object-store --description="OpenStack Storage Service"
+keystone service-create --name swift --type object-store --description "OpenStack Storage Service"
 keystone service-create --name heat --type orchestration --description "Orchestration"
 keystone service-create --name heat-cfn --type cloudformation --description "Orchestration - CloudFormation"
-keystone service-create --name ceilometer --type metering --description='OpenStack Metering Service'
+keystone service-create --name ceilometer --type metering --description 'OpenStack Metering Service'
 keystone service-create --name trove --type database --description "OpenStack Database Service"
 keystone service-create --name ec2 --type ec2 --description 'OpenStack EC2 Service'
 
