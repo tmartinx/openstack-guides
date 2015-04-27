@@ -47,14 +47,14 @@ auto eth1
 # Your routed block, SixxS.net or TunnelBroker provides one for you, for free.
 # You might want to run "radvd" on eth1 to advertise it to your LAN / Cloud.
 #
-# OpenStack Management + Instance's gateway
+# OpenStack + Instance's gateway
 iface eth1 inet6 static
     address 2001:db8:1::1
     netmask 64
 
 # IPv4 - Legacy
 #
-# OpenStack Management + Instance's gateway
+# OpenStack + Instance's gateway
 iface eth1 inet static
     address 10.32.14.1
     netmask 24

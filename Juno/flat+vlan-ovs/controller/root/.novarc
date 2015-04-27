@@ -1,5 +1,5 @@
 # COMMON OPENSTACK ENVS
-export SERVICE_TOKEN=ADMIN
+export SERVICE_TOKEN=ADMIN_TOKEN
 export OS_USERNAME=admin
 export OS_PASSWORD=admin_pass
 export OS_TENANT_NAME=admin

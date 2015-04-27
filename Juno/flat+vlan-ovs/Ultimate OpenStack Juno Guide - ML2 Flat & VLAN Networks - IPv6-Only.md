@@ -120,9 +120,9 @@ If you think that this guide is great! Please, consider a (micro)-Bitcoin (Litec
 
 # 1. First things first, the upstream router
 
-This lab have an Ubuntu acting as an "Upstream Router" with SLAAC enabled, it have two ethernet cards, with a "WAN / ISP / uplink" attached to its `eth0`, and "behind it", its `eth1`, will sit your entire OpenStack's infrastructure (i.e. `The Cloud`, `Controllers`, `Network` and `Compute Nodes`. And also, the `Instances` and `Regular Servers` or some `KVM Hypervisors` that you might have).
+This lab have an Ubuntu acting as an "Upstream Router" with SLAAC enabled, it have two ethernet cards, with a "WAN / ISP" uplink attached to its `eth0`, and "behind it", its `eth1`, will sit your entire OpenStack's infrastructure (i.e. `The Cloud`, `Controllers`, `Network` and `Compute Nodes`. And also, the `Instances` and `Regular Servers` or some `KVM Hypervisors` that you might have).
 
-This **Firewall Ubuntu** might have the package **aiccu** installed, so, you'll have at least, one IPv6 /64 block to play with (if you don't have it native from your ISP already, get one from **SixxS.net** and start using it with **aiccu**).
+This **Firewall Ubuntu** might have the package **aiccu** installed, so, you'll have at least, one free IPv6 /64 block to play with (if you don't have it native from your ISP already, get one from **SixxS.net** and start using it with **aiccu**).
 
 You'll need the package **radvd** installed, so, you'll be able to advertise your IPv6 block(s) within your (V)LAN, including each of your `Project's Instances Network`. And, for your Ubuntu IPv6 clients (including IPv6-Only `Instances`), you'll also need the package **rdnssd** to auto-configure Instance's /etc/resolv.conf file according (it will receive the *DNS Nameservers* from **radvd** on this case).
 
@@ -158,7 +158,7 @@ Install a Ubuntu 14.04.2 with at least two network cards (can be a small virtual
 
 Get it here (example):
 
-    curl -s https://raw.githubusercontent.com/tmartinx/openstack-guides/master/Juno/upstream-router/etc/network/interfaces > /etc/network/interfaces
+    curl -s https://raw.githubusercontent.com/tmartinx/openstack-guides/master/Juno/flat+vlan-ovs/upstream-router/etc/network/interfaces > /etc/network/interfaces
 
 ## 1.3. Enable IPv6 / IPv4 packet forwarding
 
@@ -174,7 +174,7 @@ OpenStack Juno is now compatible with an *upstream router* running radvd.
 
 Get it here (example):
 
-    curl -s https://raw.githubusercontent.com/tmartinx/openstack-guides/master/Juno/upstream-router/etc/radvd.conf > /etc/radvd.conf
+    curl -s https://raw.githubusercontent.com/tmartinx/openstack-guides/master/Juno/flat+vlan-ovs/upstream-router/etc/radvd.conf > /etc/radvd.conf
 
 Install the following package (RA Daemon):
 
@@ -182,11 +182,11 @@ Install the following package (RA Daemon):
 
 Now both of your LAN and your Cloud, have IPv6! Have fun!
 
-*NOTE: You'll might want to disable IPv6 Privace Extensions.*
+*NOTE: You'll might want to disable IPv6 Privace Extensions within your Intances!*
 
 ## 1.5. NAT rule (Legacy)
 
-You'll probably need to enable at least, one NAT rule on this environment, so your IPv4 subnet can reach the Internet.
+You'll probably need to enable at least, one NAT rule on this environment, so, your IPv4 subnet can reach the Internet. Nevertheless, if you have a valid (public routable) IPv4 block, then, you don't need NAT.
 
 Just run this (better to put it on /etc/rc.local or within /etc/network/interfaces):
 
@@ -233,19 +233,19 @@ Run:
 
     echo controller > /etc/hostname
 
-    curl -s https://raw.githubusercontent.com/tmartinx/openstack-guides/master/Juno/controller/etc/hosts > /etc/hosts
+    curl -s https://raw.githubusercontent.com/tmartinx/openstack-guides/master/Juno/flat+vlan-ovs/controller/etc/hosts > /etc/hosts
 
     apt-get update
 
     apt-get dist-upgrade -y
 
-    apt-get install vim iptables openvswitch-switch
+    apt-get install bash-completion command-not-found curl vim iptables rdnssd software-properties-common openvswitch-switch
 
 ## 2.2. Configure the network
 
 Get your Controller Node network interfaces file (example):
 
-    curl -s https://raw.githubusercontent.com/tmartinx/openstack-guides/master/Juno/controller/etc/network/interfaces > /etc/network/interfaces
+    curl -s https://raw.githubusercontent.com/tmartinx/openstack-guides/master/Juno/flat+vlan-ovs/controller/etc/network/interfaces > /etc/network/interfaces
 
 Run:
 
@@ -257,13 +257,9 @@ The next OVS command will kick you out from this server (if you're connected to 
 
     ovs-vsctl add-port br-eth0 eth0 && reboot
 
-...Otherwise, if you're locally connected at the controller (ttyX), then, you don't need to reboot, just `sudo service networking restart` (I guess). If unsure, then, reboot.
-
 ## 2.3. Install OpenStack "base" dependecies
 
 Run:
-
-    apt-get install ubuntu-cloud-keyring software-properties-common
 
     add-apt-repository cloud-archive:juno
 
@@ -271,7 +267,7 @@ Run:
 
     apt-get dist-upgrade -y
 
-    apt-get install openssl curl ntp mysql-server python-mysqldb rabbitmq-server python-keyring
+    apt-get install openssl ntp mysql-server python-mysqldb rabbitmq-server python-keyring
 
 Configure it:
 
@@ -283,7 +279,7 @@ Replace `guest` password (syntax is: user / pass, guest / guest).
 
 Reconfigure MySQL by downloading a new `my.cnf`:
 
-    curl -s https://raw.githubusercontent.com/tmartinx/openstack-guides/master/Juno/flat+vlan/controller/etc/mysql/my.cnf > /etc/mysql/my.cnf
+    curl -s https://raw.githubusercontent.com/tmartinx/openstack-guides/master/Juno/flat+vlan-ovs/controller/etc/mysql/my.cnf > /etc/mysql/my.cnf
 
 Restart MySQL:
 
@@ -291,15 +287,13 @@ Restart MySQL:
 
 Make your MySQL a bit safer:
 
-    mysql_install_db
-
     mysql_secure_installation
 
 Pay attention on next step, it will remove all your OpenStack Databases ("factory reset"), before creating it again.
 
 Create/reset the required databases:
 
-    curl -s https://raw.githubusercontent.com/tmartinx/openstack-guides/master/Juno/flat+vlan/controller/root/mysql-dbs.sql | mysql -u root -p
+    curl -s https://raw.githubusercontent.com/tmartinx/openstack-guides/master/Juno/flat+vlan-ovs/controller/root/mysql-dbs.sql | mysql -u root -p
 
 ### Documentation reference
 
@@ -309,11 +303,11 @@ Create/reset the required databases:
 
 ## 2.4. Install Keystone
 
-    apt-get install keystone
+    apt-get install keystone ; service keystone stop
 
 Download a new `keystone.conf` (it is based on Juno Ubuntu packages, plus a few changes):
 
-    curl -s https://raw.githubusercontent.com/tmartinx/openstack-guides/master/Juno/flat+vlan/controller/etc/keystone/keystone.conf > /etc/keystone/keystone.conf
+    curl -s https://raw.githubusercontent.com/tmartinx/openstack-guides/master/Juno/flat+vlan-ovs/controller/etc/keystone/keystone.conf > /etc/keystone/keystone.conf
 
 Then run:
 
@@ -321,15 +315,15 @@ Then run:
 
     su -s /bin/sh -c "keystone-manage db_sync" keystone
 
-    service keystone restart
+    service keystone start
 
 More Keystone stuff:
 
     cd ~
 
-    wget https://raw.githubusercontent.com/tmartinx/openstack-guides/master/Juno/flat+vlan/controller/root/keystone_basic.sh
+    wget https://raw.githubusercontent.com/tmartinx/openstack-guides/master/Juno/flat+vlan-ovs/controller/root/keystone_basic.sh
 
-    wget https://raw.githubusercontent.com/tmartinx/openstack-guides/master/Juno/flat+vlan/controller/root/keystone_endpoints_basic.sh
+    wget https://raw.githubusercontent.com/tmartinx/openstack-guides/master/Juno/flat+vlan-ovs/controller/root/keystone_endpoints_basic.sh
 
     chmod +x keystone_basic.sh
 

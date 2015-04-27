@@ -9,8 +9,8 @@ iface lo inet loopback
 # ETH0 - BEGIN
 auto eth0
 iface eth0 inet manual
+    autoconf 0
     up ip link set $IFACE up
-    up ip address add 0/0 dev $IFACE
     down ip link set $IFACE down
 # ETH0 - END
 

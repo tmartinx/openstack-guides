@@ -32,7 +32,7 @@ MYSQL_PASSWORD=keystonePass
 
 # Keystone definitions
 KEYSTONE_REGION=RegionOne
-export SERVICE_TOKEN=ADMIN
+export SERVICE_TOKEN="ADMIN_TOKEN"
 export SERVICE_ENDPOINT="http://${HOST_IP}:35357/v2.0"
 
 while getopts "u:D:p:m:K:R:E:T:vh" opt; do
@@ -109,22 +109,32 @@ if [ -n "$missing_args" ]; then
   exit 1
 fi
 
-keystone service-create --name keystone --type identity --description 'OpenStack Identity'
-keystone service-create --name glance --type image --description 'OpenStack Image Service'
-keystone service-create --name nova --type compute --description 'OpenStack Compute'
-keystone service-create --name cinder --type volume --description 'OpenStack Block Storage'
+keystone service-create --name keystone --type identity --description "OpenStack Identity"
+keystone service-create --name glance --type image --description "OpenStack Image Service"
+keystone service-create --name nova --type compute --description "OpenStack Compute"
+keystone service-create --name neutron --type network --description "OpenStack Networking"
+keystone service-create --name cinder --type volume --description "OpenStack Block Storage"
 keystone service-create --name cinderv2 --type volumev2 --description "OpenStack Block Storage"
-keystone service-create --name neutron --type network --description 'OpenStack Networking Service'
-keystone service-create --name heat --type orchestration --description 'Heat Orchestration API'
-keystone service-create --name heat-cfn --type cloudformation --description 'Heat CloudFormation API'
+keystone service-create --name swift --type object-store --description="OpenStack Storage Service"
+keystone service-create --name heat --type orchestration --description "Orchestration"
+keystone service-create --name heat-cfn --type cloudformation --description "Orchestration - CloudFormation"
 keystone service-create --name ceilometer --type metering --description='OpenStack Metering Service'
+keystone service-create --name trove --type database --description "OpenStack Database Service"
 keystone service-create --name ec2 --type ec2 --description 'OpenStack EC2 Service'
-keystone service-create --name swift --type object-store --description='OpenStack Storage Service'
 
 create_endpoint () {
   case $1 in
+    identity)
+    keystone endpoint-create --region $KEYSTONE_REGION --service-id $2 --publicurl 'http://'"$EXT_HOST_IP"':5000/v2.0' --adminurl 'http://'"$HOST_IP"':35357/v2.0' --internalurl 'http://'"$HOST_IP"':5000/v2.0'
+    ;;
+    image)
+    keystone endpoint-create --region $KEYSTONE_REGION --service-id $2 --publicurl 'http://'"$EXT_HOST_IP"':9292' --adminurl 'http://'"$HOST_IP"':9292' --internalurl 'http://'"$HOST_IP"':9292'
+    ;;
     compute)
     keystone endpoint-create --region $KEYSTONE_REGION --service-id $2 --publicurl 'http://'"$EXT_HOST_IP"':8774/v2/$(tenant_id)s' --adminurl 'http://'"$HOST_IP"':8774/v2/$(tenant_id)s' --internalurl 'http://'"$HOST_IP"':8774/v2/$(tenant_id)s'
+    ;;
+    network)
+    keystone endpoint-create --region $KEYSTONE_REGION --service-id $2 --publicurl 'http://'"$EXT_HOST_IP"':9696' --adminurl 'http://'"$HOST_IP"':9696' --internalurl 'http://'"$HOST_IP"':9696'
     ;;
     volume)
     keystone endpoint-create --region $KEYSTONE_REGION --service-id $2 --publicurl 'http://'"$EXT_HOST_IP"':8776/v1/$(tenant_id)s' --adminurl 'http://'"$HOST_IP"':8776/v1/$(tenant_id)s' --internalurl 'http://'"$HOST_IP"':8776/v1/$(tenant_id)s'
@@ -132,33 +142,27 @@ create_endpoint () {
     volumev2)
     keystone endpoint-create --region $KEYSTONE_REGION --service-id $2 --publicurl 'http://'"$EXT_HOST_IP"':8776/v2/$(tenant_id)s' --adminurl 'http://'"$HOST_IP"':8776/v2/$(tenant_id)s' --internalurl 'http://'"$HOST_IP"':8776/v2/$(tenant_id)s'
     ;;
-    image)
-    keystone endpoint-create --region $KEYSTONE_REGION --service-id $2 --publicurl 'http://'"$EXT_HOST_IP"':9292' --adminurl 'http://'"$HOST_IP"':9292' --internalurl 'http://'"$HOST_IP"':9292'
-    ;;
-    identity)
-    keystone endpoint-create --region $KEYSTONE_REGION --service-id $2 --publicurl 'http://'"$EXT_HOST_IP"':5000/v2.0' --adminurl 'http://'"$HOST_IP"':35357/v2.0' --internalurl 'http://'"$HOST_IP"':5000/v2.0'
-    ;;
-    ec2)
-    keystone endpoint-create --region $KEYSTONE_REGION --service-id $2 --publicurl 'http://'"$EXT_HOST_IP"':8773/services/Cloud' --adminurl 'http://'"$HOST_IP"':8773/services/Admin' --internalurl 'http://'"$HOST_IP"':8773/services/Cloud'
-    ;;
-    network)
-    keystone endpoint-create --region $KEYSTONE_REGION --service-id $2 --publicurl 'http://'"$EXT_HOST_IP"':9696' --adminurl 'http://'"$HOST_IP"':9696' --internalurl 'http://'"$HOST_IP"':9696'
-    ;;
     object-store)
     keystone endpoint-create --region $KEYSTONE_REGION --service-id $2 --publicurl 'http://'"$EXT_HOST_IP"':8080/v1/AUTH_$(tenant_id)s' --adminurl 'http://'"$HOST_IP"':8080/v1' --internalurl 'http://'"$HOST_IP"':8080/v1/AUTH_$(tenant_id)s'
-    ;;
-    metering)
-    keystone endpoint-create --region $KEYSTONE_REGION --service_id $2 --publicurl 'http://'"$EXT_HOST_IP"':8777' --adminurl 'http://'"$HOST_IP"':8777' --internalurl 'http://'"$HOST_IP"':8777'
     ;;
     orchestration)
     keystone endpoint-create --region $KEYSTONE_REGION --service-id $2 --publicurl 'http://'"$EXT_HOST_IP"':8004/v1/$(tenant_id)s' --adminurl 'http://'"$HOST_IP"':8004/v1/$(tenant_id)s' --internalurl 'http://'"$HOST_IP"':8004/v1/$(tenant_id)s'
     ;;
     cloudformation)
     keystone endpoint-create --region $KEYSTONE_REGION --service-id $2 --publicurl 'http://'"$EXT_HOST_IP"':8000/v1' --adminurl 'http://'"$HOST_IP"':8000/v1' --internalurl 'http://'"$HOST_IP"':8000/v1'
+    ;;
+    metering)
+    keystone endpoint-create --region $KEYSTONE_REGION --service_id $2 --publicurl 'http://'"$EXT_HOST_IP"':8777' --adminurl 'http://'"$HOST_IP"':8777' --internalurl 'http://'"$HOST_IP"':8777'
+    ;;
+    database)
+    keystone endpoint-create --region $KEYSTONE_REGION --service_id $2 --publicurl 'http://'"$EXT_HOST_IP"':8779/v1.0/$(tenant_id)s' --adminurl 'http://'"$HOST_IP"':8779/v1.0/$(tenant_id)s' --internalurl 'http://'"$HOST_IP"':8779/v1.0/$(tenant_id)s'
+    ;;
+    ec2)
+    keystone endpoint-create --region $KEYSTONE_REGION --service-id $2 --publicurl 'http://'"$EXT_HOST_IP"':8773/services/Cloud' --adminurl 'http://'"$HOST_IP"':8773/services/Admin' --internalurl 'http://'"$HOST_IP"':8773/services/Cloud'
   esac
 }
 
-for i in compute volume volumev2 image object-store identity ec2 network object-store metering orchestration cloudformation; do
+for i in identity image compute network volume volumev2 object-store object-store orchestration cloudformation metering database ec2; do
   id=`mysql -h "$MYSQL_HOST" -u "$MYSQL_USER" -p"$MYSQL_PASSWORD" "$MYSQL_DATABASE" -ss -e "SELECT id FROM service WHERE type='"$i"';"` || exit 1
   create_endpoint $i $id
 done
