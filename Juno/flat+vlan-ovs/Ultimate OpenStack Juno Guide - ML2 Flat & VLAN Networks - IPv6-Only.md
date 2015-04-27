@@ -337,7 +337,9 @@ Create Keystone "basic" stuff and OpenStack's endpoints:
 
 Preliminary Keystone test
 
-    curl http://controller.yourdomain.com:35357/v2.0/endpoints -H 'x-auth-token: ADMIN' | python -m json.tool
+    curl http://controller.yourdomain.com:35357/v2.0/users -H 'x-auth-token: ADMIN_TOKEN' | python -m json.tool
+
+    curl http://controller.yourdomain.com:35357/v2.0/endpoints -H 'x-auth-token: ADMIN_TOKEN' | python -m json.tool
 
 You might want to cleanup your expired tokens with a cronjob, otherwise, your database will increase in size indefinitely. So, do this:
 
@@ -347,7 +349,7 @@ Download the `NOVA Resource Configuration` file of your `admin` user:
 
     cd ~
 
-    wget https://raw.githubusercontent.com/tmartinx/openstack-guides/master/Juno/flat+vlan/controller/root/.novarc
+    wget https://raw.githubusercontent.com/tmartinx/openstack-guides/master/Juno/flat+vlan-ovs/controller/root/.novarc
 
 Append to your bashrc:
 
@@ -379,55 +381,11 @@ Lets install Glance
 
 ## 3.1. Configure Glance API
 
-Edit glance-api.conf...
+Reconfigure your Glance by running:
 
-    vi /etc/glance/glance-api.conf
+    curl -s https://raw.githubusercontent.com/tmartinx/openstack-guides/master/Juno/flat+vlan-ovs/controller/etc/glance/glance-api.conf > /etc/glance/glance-api.conf
 
-With:
-
-    [DEFAULT]
-    bind_host = 2001:db8:1::10
-
-    registry_host = controller.yourdomain.com
-
-    rabbit_host = controller.yourdomain.com
-
-    [database]
-    connection = mysql://glanceUser:glancePass@controller.yourdomain.com/glance
-
-    [keystone_authtoken]
-    identity_uri = http://controller.yourdomain.com:35357
-    auth_uri = http://controller.yourdomain.com:5000
-    admin_tenant_name = service
-    admin_user = glance
-    admin_password = service_pass
-
-    [paste_deploy]
-    flavor = keystone
-
-## 3.2. Configure Glance Registry
-
-Edit glance-registry.conf...
-
-    vi /etc/glance/glance-registry.conf
-
-With:
-
-    [DEFAULT]
-    bind_host = 2001:db8:1::10
-
-    [database]
-    connection = mysql://glanceUser:glancePass@controller.yourdomain.com/glance
-
-    [keystone_authtoken]
-    identity_uri = http://controller.yourdomain.com:35357
-    auth_uri = http://controller.yourdomain.com:5000
-    admin_tenant_name = service
-    admin_user = glance
-    admin_password = service_pass
-
-    [paste_deploy]
-    flavor = keystone
+    curl -s https://raw.githubusercontent.com/tmartinx/openstack-guides/master/Juno/flat+vlan-ovs/controller/etc/glance/glance-registry.conf > /etc/glance/glance-registry.conf
 
 Then run:
 
@@ -497,7 +455,7 @@ If you need to run Windows 2012 in your OpenStack, visit: http://cloudbase.it/ws
 
 Run:
 
-    apt-get install python-novaclient nova-api nova-cert nova-consoleauth nova-scheduler nova-conductor nova-spiceproxy
+    apt-get install nova-api nova-cert nova-conductor nova-consoleauth nova-spiceproxy nova-scheduler python-novaclient
 
 ## 4.1. Configure Nova
 
@@ -629,7 +587,7 @@ With:
     nova_admin_auth_url = http://controller.yourdomain.com:35357/v2.0
 
     [keystone_authtoken]
-    auth_uri = http://controller.yourdomain.com:5000
+    auth_uri = http://controller.yourdomain.com:5000/v2.0
     identity_uri = http://controller:35357
     admin_tenant_name = service
     admin_user = neutron
@@ -1009,7 +967,7 @@ With:
     nova_admin_auth_url = http://controller.yourdomain.com:35357/v2.0
 
     [keystone_authtoken]
-    auth_uri = http://controller.yourdomain.com:5000
+    auth_uri = http://controller.yourdomain.com:5000/v2.0
     auth_host = controller.yourdomain.com
     auth_port = 35357
     auth_protocol = http
