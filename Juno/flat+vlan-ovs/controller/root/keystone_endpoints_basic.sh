@@ -18,7 +18,11 @@
 # http://docs.openstack.org/juno/install-guide/install/apt/content/ch_nova.html
 # http://docs.openstack.org/juno/install-guide/install/apt/content/neutron-controller-node.html
 # http://docs.openstack.org/juno/install-guide/install/apt/content/cinder-install-controller-node.html
+# http://docs.openstack.org/juno/install-guide/install/apt/content/swift-install-controller-node.html
 # http://docs.openstack.org/juno/install-guide/install/apt/content/heat-install-controller-node.html
+# http://docs.openstack.org/juno/install-guide/install/apt/content/ceilometer-controller-install.html
+# Trove PACKAGES NOT AVAILABLE AT UBUNTU REPOS!
+# http://docs.openstack.org/juno/install-guide/install/apt/content/trove-install.html
 
 # Host IP address, hostname or FQDN - Can resolve to a IPv6 address too
 HOST_IP=controller.yourdomain.com
@@ -114,7 +118,7 @@ keystone service-create --name glance --type image --description "OpenStack Imag
 keystone service-create --name nova --type compute --description "OpenStack Compute"
 keystone service-create --name neutron --type network --description "OpenStack Networking"
 keystone service-create --name cinder --type volume --description "OpenStack Block Storage"
-keystone service-create --name cinderv2 --type volumev2 --description "OpenStack Block Storage"
+keystone service-create --name cinderv2 --type volumev2 --description "OpenStack Block Storage v2"
 keystone service-create --name swift --type object-store --description "OpenStack Storage Service"
 keystone service-create --name heat --type orchestration --description "Orchestration"
 keystone service-create --name heat-cfn --type cloudformation --description "Orchestration - CloudFormation"
