@@ -21,3 +21,7 @@ GRANT ALL ON neutron.* TO 'neutronUser'@'%' IDENTIFIED BY 'neutronPass';
 DROP DATABASE IF EXISTS heat;
 CREATE DATABASE heat;
 GRANT ALL ON heat.* TO 'heatUser'@'%' IDENTIFIED BY 'heatPass'; 
+
+DROP DATABASE IF EXISTS trove;
+CREATE DATABASE trove;
+GRANT ALL ON trove.* TO 'troveUser'@'%' IDENTIFIED BY 'trovePass'; 
