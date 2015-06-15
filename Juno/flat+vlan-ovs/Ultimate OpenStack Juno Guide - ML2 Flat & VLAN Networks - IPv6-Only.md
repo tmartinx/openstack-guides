@@ -8,7 +8,7 @@ The Project's (old "Tenant" terminology) subnets are based on Neutron, with ML2 
 
 The `Single Flat Network` is the simplest network topology supported by OpenStack. So, it is easier to understand and follow. Then, you can start using `VLAN Provider Networks`, which is basically something like a "Multi-(Single Flat Network)", where each "Flat LAN" resides on its own VLAN tag.
 
-Finally, the IPv6 support on `Neutron L3 Router` is ready! With ML2 plugin, you can have a Dual-Stacked environment on top of a `Single Flat Network / VLAN Provider Networks` without using `Neutron L3 Router` at all (i.e. by using upstream routers).
+The IPv6 support on `Neutron L3 Router` is finaly ready! With ML2 plugin, you can have a Dual-Stacked environment on top of a `Single Flat Network / VLAN Provider Networks` without using `Neutron L3 Router` at all (i.e. by using upstream routers).
 
 Apparently, only Metadata and the "GRE / VXLAN subnet" still requires IPv4. This is why this guide is "almost IPv6-Only". If you don't need Metadata Services, or if you only use "Config Drive", you don't need IPv4 as well.
 
@@ -91,6 +91,9 @@ If you think that this guide is great! Please, consider a (micro)-Bitcoin (Litec
 ### 6. Install Cinder (optional)
 #### 6.1. Cinder API / endpoint access
 #### 6.2. Cinder iSCSI block storage service
+
+### X. Install Heat
+#### X.1 Install and Configure
 
 ### 8. Deploying your first Compute Node
 #### 8.1. Install Ubuntu 14.04.2
@@ -180,7 +183,7 @@ Install the following package (RA Daemon):
 
     sudo apt-get install radvd
 
-Now both of your LAN and your Cloud, have IPv6! Have fun!
+Now both of your LAN and your Cloud have IPv6! Have fun!
 
 *NOTE: You'll might want to disable IPv6 Privace Extensions within your Intances!*
 
@@ -248,8 +251,6 @@ Get your Controller Node network interfaces file (example):
     curl -s https://raw.githubusercontent.com/tmartinx/openstack-guides/master/Juno/flat+vlan-ovs/controller/etc/network/interfaces > /etc/network/interfaces
 
 Run:
-
-    ovs-vsctl add-br br-int
 
     ovs-vsctl add-br br-eth0
 
@@ -457,6 +458,8 @@ Run:
 
     apt-get install nova-api nova-cert nova-conductor nova-consoleauth nova-spiceproxy nova-scheduler python-novaclient
 
+    cd /etc/init/; for i in $(ls nova-* | cut -d \. -f 1 | xargs); do sudo service $i stop; done
+
 ## 4.1. Configure Nova
 
 Run:
@@ -479,7 +482,7 @@ Run:
 
 Now, you can restart all Nova services:
 
-    cd /etc/init/; for i in $(ls nova-* | cut -d \. -f 1 | xargs); do sudo service $i restart; done
+    cd /etc/init/; for i in $(ls nova-* | cut -d \. -f 1 | xargs); do sudo service $i start; done
 
 ## 4.2. Personalize your flavors (optional):
 
@@ -562,101 +565,21 @@ First, take a note of the "Service Tenant ID" with:
 
     keystone tenant-get service
 
-Edit neutron.conf...
+Download neutron.conf:
 
-    vi /etc/neutron/neutron.conf
+    curl -s https://raw.githubusercontent.com/tmartinx/openstack-guides/master/Juno/flat+vlan-ovs/controller/etc/neutron/neutron.conf > /etc/neutron/neutron.conf
 
-With:
+Download ml2_conf.ini:
 
-    [DEFAULT]
-    bind_host = 2001:db8:1::10
-    auth_strategy = keystone
-    allow_overlapping_ips = True
-    rabbit_host = controller.yourdomain.com
-    rpc_backend = rabbit
-    core_plugin = ml2
-    service_plugins = router
+    curl -s https://raw.githubusercontent.com/tmartinx/openstack-guides/master/Juno/flat+vlan-ovs/controller/etc/neutron/plugins/ml2/ml2_conf.ini > /etc/neutron/plugins/ml2/ml2_conf.ini
 
-    notify_nova_on_port_status_changes = True
-    notify_nova_on_port_data_changes = True
-    nova_url = http://controller.yourdomain.com:8774/v2
-    nova_region_name = RegionOne
-    nova_admin_username = nova
-    nova_admin_tenant_id = $SERVICE_TENANT_ID
-    nova_admin_password = service_pass
-    nova_admin_auth_url = http://controller.yourdomain.com:35357/v2.0
+Download metadata_agent.ini:
 
-    [keystone_authtoken]
-    auth_uri = http://controller.yourdomain.com:5000/v2.0
-    identity_uri = http://controller:35357
-    admin_tenant_name = service
-    admin_user = neutron
-    admin_password = service_pass
-    signing_dir = $state_path/keystone-signing
+    curl -s https://raw.githubusercontent.com/tmartinx/openstack-guides/master/Juno/flat+vlan-ovs/controller/etc/neutron/metadata_agent.ini > /etc/neutron/metadata_agent.ini
 
-    [database]
-    connection = mysql://neutronUser:neutronPass@controller.yourdomain.com/neutron
+Download dhcp_agent.ini:
 
-Edit ml2_conf.ini...
-
-    vi /etc/neutron/plugins/ml2/ml2_conf.ini
-
-With:
-
-    [ml2]
-    type_drivers = local,flat
-
-    mechanism_drivers = openvswitch,l2population
-
-    [ml2_type_flat]
-    flat_networks = *
-
-    [securitygroup]
-    enable_security_group = True
-    firewall_driver = neutron.agent.linux.iptables_firewall.OVSHybridIptablesFirewallDriver
-    enable_ipset = True
-
-    [ovs]
-    enable_tunneling = False
-    local_ip = 10.0.0.11
-    network_vlan_ranges = physnet1
-    bridge_mappings = physnet1:br-eth0
-
-Edit metadata_agent.ini...
-
-    vi /etc/neutron/metadata_agent.ini
-
-With:
-
-    # The Neutron user information for accessing the Neutron API.
-    auth_url = http://controller.yourdomain.com:5000/v2.0
-    auth_region = RegionOne
-    # Turn off verification of the certificate for ssl
-    # auth_insecure = False
-    # Certificate Authority public key (CA cert) file for ssl
-    # auth_ca_cert =
-    admin_tenant_name = service
-    admin_user = neutron
-    admin_password = service_pass
-
-    nova_metadata_ip = 10.0.0.11
-    nova_metadata_port = 8775
-    metadata_proxy_shared_secret = metasecret13
-
-Edit dhcp_agent.ini...
-
-    vi /etc/neutron/dhcp_agent.ini
-
-With:
-
-    [DEFAULT]
-    interface_driver = neutron.agent.linux.interface.OVSInterfaceDriver
-
-    use_namespaces = True
-
-    enable_isolated_metadata = True
-
-    dhcp_domain = yourdomain.com
+    curl -s https://raw.githubusercontent.com/tmartinx/openstack-guides/master/Juno/flat+vlan-ovs/controller/etc/neutron/dhcp_agent.ini > /etc/neutron/dhcp_agent.ini
 
 Run:
 
@@ -704,9 +627,11 @@ Create an IPv6 subnet on "sharednet1":
 
     apt-get install cinder-api cinder-scheduler python-mysqldb
 
-    curl -s https://raw.githubusercontent.com/tmartinx/openstack-guides/master/Juno/flat+vlan/controller/etc/cinder/cinder.conf > /etc/cinder/cinder.conf
+    curl -s https://raw.githubusercontent.com/tmartinx/openstack-guides/master/Juno/flat+vlan-ovs/controller/etc/cinder/cinder.conf > /etc/cinder/cinder.conf
 
 Run:
+
+    rm -f /var/lib/cinder/cinder.sqlite
 
     su -s /bin/sh -c "cinder-manage db sync" cinder
 
@@ -763,6 +688,27 @@ Done! You can try to access the Dashboard to test admin login...
 
  * http://docs.openstack.org/juno/install-guide/install/apt/content/install_dashboard.html
 
+
+# X. Install Heat
+
+Run:
+
+    apt-get install heat-api heat-api-cfn heat-engine python-heatclient
+    
+    cd /etc/init/; for i in $(ls heat-* | cut -d \. -f 1 | xargs); do sudo service $i stop; done
+
+## X.1 Install and Configure
+
+Run:
+
+    curl -s https://raw.githubusercontent.com/tmartinx/openstack-guides/master/Juno/flat+vlan-ovs/controller/etc/heat/heat.conf > /etc/heat/heat.conf
+
+    rm -f /var/lib/heat/heat.sqlite
+
+    su -s /bin/sh -c "heat-manage db_sync" heat
+    
+    cd /etc/init/; for i in $(ls heat-* | cut -d \. -f 1 | xargs); do sudo service $i start; done
+
 ---
 
 # 8. Deploying your first Compute Node
@@ -801,7 +747,7 @@ Login as root and run:
 
     apt-get update
 
-    apt-get install ubuntu-cloud-keyring software-properties-common
+    apt-get install software-properties-common
 
     add-apt-repository cloud-archive:juno
 
@@ -811,7 +757,7 @@ Login as root and run:
 
     # If your kernel gets upgraded, do a reboot before running the next command:
 
-    apt-get install linux-image-extra-`uname -r` vim iptables ipset ubuntu-virt-server libvirt-bin pm-utils nova-compute-kvm python-guestfs neutron-plugin-openvswitch-agent openvswitch-switch -y
+    apt-get install linux-image-extra-`uname -r` vim iptables ipset ubuntu-virt-server libvirt-bin pm-utils nova-compute-kvm neutron-plugin-openvswitch-agent openvswitch-switch -y
 
 When prompted to create a *supermin* appliance, respond **yes**.
 
@@ -1014,7 +960,7 @@ Run:
 
 # 9. Creating your first Dual-Stacked Instance
 
-Now, go back to the node `controller.yourdomain.com` and run the following commands as root:
+Now, go back to the node `controller.yourdomain.com` and run the next commands as root:
 
 Show the O.S. images to get the IDs:
 
@@ -1118,11 +1064,11 @@ You have your own Private Cloud Computing Environment up and running! With IPv6!
 
 ## 14.1. About upstream router
 
-The "upstream router" is located outside of OpenStack's control, it is dual-stacked, and the default route for both physical serves and instances. This means that we're *mapping our physical network into OpenStack*, using ML2 plugin with *Single Flat Network* topology (also *VLAN Provider Network* is supported).
+The *upstream router* is located outside of OpenStack's control, it is Dual-Stacked and it is the default route for both Physical/Virtual Serves and Instances. This means that we're *mapping our physical network into OpenStack*, using ML2 plugin with *Single Flat Network* topology (also *VLAN Provider Network* is supported).
 
 ## 14.2. About IPv6
 
-For tenant's subnet, the "border gateway / external router" have the IPv6 Router Advertisement daemon running on it (radvd), so, the instances can use it using "Upstream IPv6 RA / SLAAC".
+For Project's subnet, the *upstream router* have the IPv6 Router Advertisement daemon running on it (radvd), so, the Instances can use it as "Upstream IPv6 RA / SLAAC Router".
 
 ## 14.3. About IPv4
 
@@ -1132,11 +1078,11 @@ When using OpenStack Juno, there is only one place that IPv4 is still required: 
 
 Everything else, is IPv6-Only, as expected.
 
-Nevertheless, if you don't want to play with IPv6, you can safely replace all IPv6 address of this guide, with your IPv4, everything will work as expected.
+Nevertheless, if you don't want to play with IPv6, you can safely replace all IPv6 address of this guide, with your IPv4, everything will work as expected, specially when you make use of Hostnames or FQDN.
 
 ## 14.4. About NAT
 
-My idea is to move on and forget about IPv4 and NAT tables, so, with IPv6, we don't need NAT anymore. NAT66 is a bad thing (from my point of view), be part of the real Internet with IPv6 address from the subnet 2000::/3! Again, **do not use** "ip6tables -t nat", unless you want to break your network, and the Internet itself.
+My idea is to move on and forget about IPv4 and NAT tables, so, with IPv6, we don't need NAT anymore. NAT66 is a bad thing (from my point of view), be part of the real Internet with IPv6 address from the subnet 2000::/3! Again, **do not use** "ip6tables -t nat", unless you want to break your network, and the Internet itself!
 
 One last word about NAT: it breaks the end-to-end Internet connectivity, effectively kicking you out from the real Internet, and it is just a workaround created to deal with the IPv4 exhaustion, so, there is no need for NAT(66) on an IPv6-World.
 
