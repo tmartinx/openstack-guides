@@ -116,6 +116,7 @@ fi
 keystone service-create --name keystone --type identity --description "OpenStack Identity"
 keystone service-create --name glance --type image --description "OpenStack Image Service"
 keystone service-create --name nova --type compute --description "OpenStack Compute"
+keystone service-create --name novav3 --type computev3 --description "Nova Compute Service V3"
 keystone service-create --name neutron --type network --description "OpenStack Networking"
 keystone service-create --name cinder --type volume --description "OpenStack Block Storage"
 keystone service-create --name cinderv2 --type volumev2 --description "OpenStack Block Storage v2"
@@ -137,6 +138,10 @@ create_endpoint () {
     compute)
     keystone endpoint-create --region $KEYSTONE_REGION --service-id $2 --publicurl 'http://'"$EXT_HOST_IP"':8774/v2/$(tenant_id)s' --adminurl 'http://'"$HOST_IP"':8774/v2/$(tenant_id)s' --internalurl 'http://'"$HOST_IP"':8774/v2/$(tenant_id)s'
     ;;
+    computev3)
+    keystone endpoint-create --region $KEYSTONE_REGION --service-id $2 --publicurl 'http://'"$EXT_HOST_IP"':8774/v3' --adminurl 'http://'"$HOST_IP"':8774/v3' --internalurl 'http://'"$HOST_IP"':8774/v3'
+    ;;
+
     network)
     keystone endpoint-create --region $KEYSTONE_REGION --service-id $2 --publicurl 'http://'"$EXT_HOST_IP"':9696' --adminurl 'http://'"$HOST_IP"':9696' --internalurl 'http://'"$HOST_IP"':9696'
     ;;
