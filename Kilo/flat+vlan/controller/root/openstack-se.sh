@@ -30,7 +30,7 @@ EXT_HOST_IP=controller.yourdomain.com
 # Keystone definitions
 REGION=RegionOne
 export OS_TOKEN="ADMIN_TOKEN"
-export OS_URL="http://${HOST_ADDR}:35357/v2.0"
+export OS_URL="http://${HOST_IP}:35357/v2.0"
 
 while getopts "K:R:E:T:vh" opt; do
   case $opt in

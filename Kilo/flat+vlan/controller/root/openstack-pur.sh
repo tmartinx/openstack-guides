@@ -23,6 +23,8 @@
 # http://docs.openstack.org/kilo/install-guide/install/apt/content/ceilometer-controller-install.html
 # ** Trove docs and packages missing ***
 
+export LC_ALL=C
+
 # Host IP address, hostname or FQDN - Can resolve to an IPv6 address too:
 HOST_ADDR=controller.yourdomain.com
 
@@ -74,8 +76,8 @@ openstack role add --project demo --user demo heat_stack_owner
 
 openstack role create heat_stack_user
 
-openstack user create --password "$SERVICE_PASSWORD" --email ceilometer@yourmain.com ceilometer
+openstack user create --password "$SERVICE_PASSWORD" --email ceilometer@yourdomain.com ceilometer
 openstack role add --project service --user ceilometer admin
 
-openstack user create --password "$SERVICE_PASSWORD" --email trove@yourmain.com trove
+openstack user create --password "$SERVICE_PASSWORD" --email trove@yourdomain.com trove
 openstack role add --project service --user trove admin
